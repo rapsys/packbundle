@@ -1,0 +1,15 @@
+services:
+    rapsys_pack.twig.pack_extension:
+         class: Rapsys\PackBundle\Twig\PackExtension
+         arguments: [ '@file_locator', '@service_container' ]
+         tags:
+             - { name: twig.extension }
+#    rapsys_pack.cpack:
+#         class: Rapsys\PackBundle\Cpack
+#         arguments: [ '/usr/local/bin/cpack' ]
+#    rapsys_pack.jpack:
+#         class: Rapsys\PackBundle\Jpack
+#         arguments: [ '/usr/local/bin/jpack' ]
+#
+#        class: Rapsys\PackBundle\Example
+#        arguments: ["@service_id", "plain_value", "%parameter%"]

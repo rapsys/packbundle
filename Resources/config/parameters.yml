@@ -1,0 +1,13 @@
+# src/Rapsys/PackBundle/Resources/config/parameters.yml
+parameters:
+    rapsys_pack:
+        jpack: '/usr/local/bin/jpack'
+        cpack: '/usr/local/bin/cpack'
+        prefix: '@@RapsysPackBundle/Resources/public/'
+
+framework:
+    assets:
+        packages:
+            rapsys_pack:
+                base_path: '/bundles/rapsyspack'
+                version: ~
