@@ -75,15 +75,18 @@ class PackTokenParser extends \Twig_TokenParser {
 
 		//Replace star with sha1
 		if (($pos = strpos($output, '*')) !== false) {
-			#XXX: assetic code : substr(sha1(serialize($inputs).serialize($filters).serialize($options)), 0, 7)
+			#XXX: assetic code: substr(sha1(serialize($inputs).serialize($filters).serialize($options)), 0, 7)
 			$output = substr($output, 0, $pos).sha1(serialize($inputs).serialize($filters)).substr($output, $pos + 1);
 		}
 
 		//Deal with inputs
+		//TODO: support @jquery ? or is it supported already with fileLocator->locate ?
 		for($k = 0; $k < count($inputs); $k++) {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
 				//TODO: set this as a parameter (scheme)
+				#if ($containerInterface->hasParameter('rapsys_pack.default_scheme')) {
+				#	if ($parameters = $containerInterface->getParameter('rapsys_pack.default_scheme')) {
 				$inputs[$k] = 'https:'.$inputs[$k];
 			//Deal with non url path
 			} elseif (strpos($inputs[$k], '://') === false) {
@@ -123,6 +126,9 @@ class PackTokenParser extends \Twig_TokenParser {
 			$ctx = stream_context_create(
 				array(
 					'http' => array(
+						//TODO: set this as a parameter (scheme)
+						#if ($containerInterface->hasParameter('rapsys_pack.input_timeout')) {
+						#       if ($parameters = $containerInterface->getParameter('rapsys_pack.input_timeout')) {
 						'timeout' => 5
 					)
 				)
