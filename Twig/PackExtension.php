@@ -6,8 +6,6 @@ use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class PackExtension extends \Twig_Extension {
-	#, $prefix = '@RapsysPackBundle/Resources/public/', $cpack = '/usr/local/bin/cpack', $jpack = '/usr/local/bin/jpack'
-	#$this->kernel = $kernel;
 	public function __construct(FileLocator $fileLocator, ContainerInterface $containerInterface) {
 		//Set file locator
 		$this->fileLocator = $fileLocator;
@@ -29,9 +27,11 @@ class PackExtension extends \Twig_Extension {
 
 		//Load configuration
 		if ($containerInterface->hasParameter('rapsys_pack')) {
-			foreach($containerInterface->getParameter('rapsys_pack') as $k => $v) {
-				if (isset($this->$k)) {
-					$this->$k = $v;
+			if ($parameters = $containerInterface->getParameter('rapsys_pack')) {
+				foreach($parameters as $k => $v) {
+					if (isset($this->$k)) {
+						$this->$k = $v;
+					}
 				}
 			}
 		}
