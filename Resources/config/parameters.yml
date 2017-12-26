@@ -1,9 +1,21 @@
 # src/Rapsys/PackBundle/Resources/config/parameters.yml
 parameters:
     rapsys_pack:
-        jpack: '/usr/local/bin/jpack'
-        cpack: '/usr/local/bin/cpack'
-        prefix: '@@RapsysPackBundle/Resources/public/'
+        coutput: ~
+        joutput: ~
+        ioutput: ~
+        cfilter: [ 'CPackFilter' ]
+        jfilter: [ 'JPackFilter' ]
+        ifilter: [ 'IPackFilter' ]
+        prefix: ~
+        scheme: ~
+        timeout: 5
+        user_agent: ~
+        redirect: 3
+    rapsys_pack.jpackfilter:
+        bin: '/usr/local/bin/jpack'
+    rapsys_pack.cpackfilter:
+        bin: '/usr/local/bin/cpack'
 
 framework:
     assets:
@@ -11,3 +23,7 @@ framework:
             rapsys_pack:
                 base_path: '/bundles/rapsyspack'
                 version: ~
+
+# Force cache disable to regenerate resources each time
+#twig:
+#        cache: ~
