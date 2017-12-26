@@ -24,6 +24,18 @@ class Configuration implements ConfigurationInterface
         // configure your bundle. See the documentation linked above for
         // more information on that topic.
 
+	//TODO: see https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/DependencyInjection/Configuration.php for default value and description
+	//TODO: see http://symfony.com/doc/current/components/config/definition.html
+	//TODO: use bin/console config:dump-reference to dump class infos
+	$rootNode
+		->children()
+			->scalarNode('jpack')->end()
+			->scalarNode('cpack')->end()
+			->scalarNode('prefix')->end()
+			->scalarNode('scheme')->end()
+			->integerNode('timeout')->end()
+		->end();
+
         return $treeBuilder;
     }
 }
