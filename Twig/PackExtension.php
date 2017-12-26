@@ -19,17 +19,21 @@ class PackExtension extends \Twig_Extension {
 		$this->coutput = 'css/*.pack.css';
 		//Set default joutput
 		$this->joutput = 'js/*.pack.js';
+		//Set default ioutput
+		$this->ioutput = 'img/*.pack.jpg';
 
-		//Set default cpack
-		$this->cpack = '/usr/local/bin/cpack';
-		//Set default jpack
-		$this->jpack = '/usr/local/bin/jpack';
+		//Set default cfilter
+		$this->cfilter = array('CPackFilter');
+		//Set default jfilter
+		$this->jfilter = array('JPackFilter');
+		//Set default ifilter
+		$this->ifilter = array('IPackFilter');
 
 		//Load configuration
 		if ($containerInterface->hasParameter('rapsys_pack')) {
 			if ($parameters = $containerInterface->getParameter('rapsys_pack')) {
 				foreach($parameters as $k => $v) {
-					if (isset($this->$k)) {
+					if (isset($this->$k) && !empty($v)) {
 						$this->$k = $v;
 					}
 				}
@@ -42,9 +46,9 @@ class PackExtension extends \Twig_Extension {
 
 	public function getTokenParsers() {
 		return array(
-			new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'stylesheets', $this->coutput, $this->cpack),
-			new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'javascripts', $this->joutput, $this->jpack),
-			#new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'image', '*.pack.{tld}'),
+			new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'stylesheet', $this->coutput, $this->cfilter),
+			new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'javascript', $this->joutput, $this->jfilter),
+			new PackTokenParser($this->fileLocator, $this->containerInterface, $this->prefix, 'image', $this->ioutput, $this->ifilter),
 		);
 	}
 }
