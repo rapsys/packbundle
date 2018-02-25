@@ -26,4 +26,4 @@ framework:
 
 # Force cache disable to regenerate resources each time
 #twig:
-#        cache: ~
+#    cache: ~
