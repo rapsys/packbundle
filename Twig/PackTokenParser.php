@@ -4,6 +4,7 @@ namespace Rapsys\PackBundle\Twig;
 
 use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
+use Symfony\Component\Asset\Packages;
 
 class PackTokenParser extends \Twig_TokenParser {
 	private $tag;
@@ -12,15 +13,17 @@ class PackTokenParser extends \Twig_TokenParser {
 	 * Constructor.
 	 *
 	 * @param class		$fileLocator		The FileLocator instance
+	 * @param class		$containerInterface	The Container Interface instance
 	 * @param class		$assetsPackages		The Assets Packages instance
 	 * @param string	$prefix			The prefix path
 	 * @param string	$tag			The tag name
 	 * @param string	$output			The default output string
 	 * @param array		$filters		The default filters array
 	 */
-	public function __construct(FileLocator $fileLocator, ContainerInterface $containerInterface, $prefix, $tag, $output, $filters) {
+	public function __construct(FileLocator $fileLocator, ContainerInterface $containerInterface, Packages $assetsPackages, $prefix, $tag, $output, $filters) {
 		$this->fileLocator		= $fileLocator;
 		$this->containerInterface	= $containerInterface;
+		$this->assetsPackages		= $assetsPackages;
 		$this->prefix			= $prefix;
 		$this->tag			= $tag;
 		$this->output			= $output;
@@ -233,7 +236,7 @@ class PackTokenParser extends \Twig_TokenParser {
 		}
 
 		//Retrieve asset uri
-		if (($output = $this->containerInterface->get('assets.packages')->getUrl($output, 'rapsys_pack')) === false) {
+		if (($output = $this->assetsPackages->getUrl($output, 'rapsys_pack')) === false) {
 			throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s with package %s', $output, 'rapsys_pack'), $token->getLine(), $stream->getSourceContext());
 		}
 
