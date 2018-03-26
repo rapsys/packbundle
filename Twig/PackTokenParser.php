@@ -216,7 +216,11 @@ class PackTokenParser extends \Twig_TokenParser {
 		//Create output dir on demand
 		if (!is_dir($parent = $dir = dirname($this->prefix.$output))) {
 			//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
-			mkdir($dir, 0777, true);
+			try {
+				mkdir($dir, 0777, true);
+			} catch (\Exception $e) {
+				throw new \Twig_Error_Syntax(sprintf('Unable to create directory: %s', $dir), $token->getLine(), $stream->getSourceContext());
+			}
 		}
 
 		//Send file content
