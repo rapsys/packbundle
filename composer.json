@@ -9,7 +9,7 @@
     }],
     "autoload": {
 	    "psr-0": {
-		    "Rapsys\\PackBundle": ""
+		    "Rapsys\\PackBundle": "src"
 	    }
     },
     "target-dir": "Rapsys/PackBundle",
