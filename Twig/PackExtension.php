@@ -17,7 +17,8 @@ class PackExtension extends \Twig_Extension {
 		$this->assetsPackages = $assetsPackages;
 
 		//Set default prefix
-		$this->prefix = '@RapsysPackBundle/Resources/public/';
+		//XXX: require symfony 3.3
+		$this->prefix = $this->containerInterface->getParameter('kernel.project_dir').'/web/';
 
 		//Set default coutput
 		$this->coutput = 'css/*.pack.css';

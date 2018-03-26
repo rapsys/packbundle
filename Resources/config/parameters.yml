@@ -21,7 +21,7 @@ framework:
     assets:
         packages:
             rapsys_pack:
-                base_path: '/bundles/rapsyspack'
+                base_path: ~
                 version: ~
 
 # Force cache disable to regenerate resources each time
