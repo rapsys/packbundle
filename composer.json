@@ -8,8 +8,8 @@
 	    "email": "packbundle@rapsys.eu"
     }],
     "autoload": {
-	    "psr-0": {
-		    "Rapsys\\PackBundle": "src"
+	    "psr-4": {
+		    "Rapsys\\PackBundle\\": ""
 	    }
     },
     "target-dir": "Rapsys/PackBundle",
