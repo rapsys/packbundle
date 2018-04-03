@@ -4,15 +4,13 @@
 namespace Rapsys\PackBundle\Twig\Filter;
 
 use Rapsys\PackBundle\Twig\Filter\FilterInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class CPackFilter implements FilterInterface {
 	//Default bin
-	private $bin = 'cpack';
+	private $bin;
 
 	//Default compress type
-	//XXX: can be minify or pretty
-	private $compress = 'minify';
+	private $compress;
 
 	//Twig template filename
 	private $fileName;
@@ -21,23 +19,19 @@ class CPackFilter implements FilterInterface {
 	private $line;
 
 	//Configure the object
-	public function __construct(ContainerInterface $containerInterface, $fileName, $line) {
-		//Load configuration
-		if ($containerInterface->hasParameter('rapsys_pack_cpackfilter')) {
-			if ($parameters = $containerInterface->getParameter('rapsys_pack_cpackfilter')) {
-				foreach($parameters as $k => $v) {
-					if (isset($this->$k)) {
-						$this->$k = $v;
-					}
-				}
-			}
-		}
-
+	//XXX: compress can be minify or pretty
+	public function __construct($fileName, $line, $bin = 'cpack', $compress = 'minify') {
 		//Set fileName
 		$this->fileName = $fileName;
 
 		//Set line
 		$this->line = $line;
+
+		//Set bin
+		$this->bin = $bin;
+
+		//Set compress
+		$this->compress = $compress;
 
 		//Deal with compress
 		if (!empty($this->compress)) {

@@ -4,15 +4,13 @@
 namespace Rapsys\PackBundle\Twig\Filter;
 
 use Rapsys\PackBundle\Twig\Filter\FilterInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class JPackFilter implements FilterInterface {
 	//Default bin
-	private $bin = 'jpack';
+	private $bin;
 
 	//Default compress type
-	//XXX: can be clean, shrink, obfuscate or best
-	private $compress = 'best';
+	private $compress;
 
 	//Twig template filename
 	private $fileName;
@@ -20,23 +18,20 @@ class JPackFilter implements FilterInterface {
 	//Twig template line
 	private $line;
 
-	public function __construct(ContainerInterface $containerInterface, $fileName, $line) {
-		//Load configuration
-		if ($containerInterface->hasParameter('rapsys_pack_jpackfilter')) {
-			if ($parameters = $containerInterface->getParameter('rapsys_pack_jpackfilter')) {
-				foreach($parameters as $k => $v) {
-					if (isset($this->$k)) {
-						$this->$k = $v;
-					}
-				}
-			}
-		}
-
+	//Configure the object
+	//XXX: can be clean, shrink, obfuscate or best
+	public function __construct($fileName, $line, $bin = 'jpack', $compress = 'best') {
 		//Set fileName
 		$this->fileName = $fileName;
 
 		//Set line
 		$this->line = $line;
+
+		//Set bin
+		$this->bin = $bin;
+
+		//Set compress
+		$this->compress = $compress;
 
 		//Deal with compress
 		if (!empty($this->compress)) {
