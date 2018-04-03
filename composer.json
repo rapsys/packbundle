@@ -19,10 +19,6 @@
     "extra": {
         "branch-alias": {
 		"dev-master": "master"
-	},
-        "incenteev-parameters": {
-            "file": "Resources/config/parameters.yml",
-	    "keep-outdated": true
         }
     }
 }
