@@ -38,4 +38,11 @@ class RapsysPackExtension extends Extension {
 		//Get configuration instance with resolved web path
 		return new Configuration($container->getParameter('kernel.project_dir').'/web/');
 	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getAlias() {
+		return 'rapsys_pack';
+	}
 }
