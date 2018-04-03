@@ -21,7 +21,10 @@ class Configuration implements ConfigurationInterface {
 	 * {@inheritdoc}
 	 */
 	public function getConfigTreeBuilder() {
+		//Get TreeBuilder object
 		$treeBuilder = new TreeBuilder();
+
+		//Get ExecutableFinder object
 		$finder = new ExecutableFinder();
 
 		#TODO: see how we deal with asset url generation: see Rapsys/PackBundle/Twig/PackTokenParser.php +243
@@ -36,50 +39,93 @@ class Configuration implements ConfigurationInterface {
 		##twig:
 		##    cache: ~
 
-		//Here we define the parameters that are allowed to configure the bundle.
 		//TODO: see https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/DependencyInjection/Configuration.php for default value and description
 		//TODO: see http://symfony.com/doc/current/components/config/definition.html
 		//TODO: see https://github.com/symfony/assetic-bundle/blob/master/DependencyInjection/Configuration.php#L63
 		//TODO: use bin/console config:dump-reference to dump class infos
+
+		//The bundle default values
+		$defaults = [
+			'config' => [
+				'prefix' => $this->projectDir,
+				'scheme' => 'https://',
+				'timeout' => (int)ini_get('default_socket_timeout'),
+				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.0.2',
+				'redirect' => 5
+			],
+			'output' => [
+				'css' => 'css/*.pack.css',
+				'js' => 'js/*.pack.js',
+				'img' => 'img/*.pack.jpg'
+			],
+			'filter' => [
+				'css' => [
+					'Rapsys\PackBundle\Twig\Filter\CPackFilter' => [$finder->find('cpack', '/usr/local/bin/cpack')]
+				],
+				'js' => [
+					'Rapsys\PackBundle\Twig\Filter\JPackFilter' => [$finder->find('jpack', '/usr/local/bin/jpack')]
+				],
+				'img' => [
+					'Rapsys\PackBundle\Twig\Filter\IPackFilter' => []
+				],
+			]
+		];
+
+		//Here we define the parameters that are allowed to configure the bundle.
 		$treeBuilder
 			//Parameters
 			->root('parameters')
+				->isRequired()
+				->addDefaultsIfNotSet()
 				->children()
 					->arrayNode('rapsys_pack')
+						->isRequired()
+						->addDefaultsIfNotSet()
 						->children()
-							->scalarNode('coutput')->defaultValue('css/*.pack.css')->end()
-							->scalarNode('joutput')->defaultValue('js/*.pack.js')->end()
-							->scalarNode('ioutput')->defaultValue('img/*.pack.jpg')->end()
-							->arrayNode('cfilter')
-								->treatNullLike(array())
-								->scalarPrototype()->end()
-								->defaultValue(array('Rapsys\PackBundle\Twig\Filter\CPackFilter'))
+							->arrayNode('config')
+								->isRequired()
+								->addDefaultsIfNotSet()
+								->children()
+									->scalarNode('prefix')->isRequired()->defaultValue($defaults['config']['prefix'])->end()
+									->scalarNode('scheme')->isRequired()->defaultValue($defaults['config']['scheme'])->end()
+									->integerNode('timeout')->isRequired()->min(0)->defaultValue($defaults['config']['timeout'])->end()
+									->scalarNode('agent')->isRequired()->defaultValue($defaults['config']['agent'])->end()
+									->integerNode('redirect')->isRequired()->min(1)->defaultValue($defaults['config']['redirect'])->end()
+								->end()
 							->end()
-							->arrayNode('jfilter')
-								->treatNullLike(array())
-								->scalarPrototype()->end()
-								->defaultValue(array('Rapsys\PackBundle\Twig\Filter\JPackFilter'))
+							->arrayNode('output')
+								->isRequired()
+								->addDefaultsIfNotSet()
+								->children()
+									->scalarNode('css')->isRequired()->defaultValue($defaults['output']['css'])->end()
+									->scalarNode('js')->isRequired()->defaultValue($defaults['output']['js'])->end()
+									->scalarNode('img')->isRequired()->defaultValue($defaults['output']['img'])->end()
+								->end()
 							->end()
-							->arrayNode('ifilter')
-								->treatNullLike(array())
-								->scalarPrototype()->end()
-								->defaultValue(array('Rapsys\PackBundle\Twig\Filter\IPackFilter'))
+							->arrayNode('filter')
+								->isRequired()
+								->addDefaultsIfNotSet()
+								->children()
+									->arrayNode('css')
+										->isRequired()
+										->treatNullLike(array())
+										->scalarPrototype()->end()
+										->defaultValue($defaults['filter']['css'])
+									->end()
+									->arrayNode('js')
+										->isRequired()
+										->treatNullLike(array())
+										->scalarPrototype()->end()
+										->defaultValue($defaults['filter']['js'])
+									->end()
+									->arrayNode('img')
+										->isRequired()
+										->treatNullLike(array())
+										->scalarPrototype()->end()
+										->defaultValue($defaults['filter']['img'])
+									->end()
+								->end()
 							->end()
-							->scalarNode('prefix')->defaultValue($this->projectDir)->end()
-							->scalarNode('scheme')->defaultValue('https://')->end()
-							->integerNode('timeout')->min(0)->defaultValue((int)ini_get('default_socket_timeout'))->end()
-							->scalarNode('agent')->defaultValue(ini_get('user_agent'))->end()
-							->integerNode('redirect')->min(1)->defaultValue(20)->end()
-						->end()
-					->end()
-					->arrayNode('rapsys_pack_cpackfilter')
-						->children()
-							->scalarNode('bin')->defaultValue(function () use ($finder) { return $finder->find('cpack', '/usr/local/bin/cpack'); })->end()
-						->end()
-					->end()
-					->arrayNode('rapsys_pack_jpackfilter')
-						->children()
-							->scalarNode('bin')->defaultValue(function () use ($finder) { return $finder->find('jpack', '/usr/local/bin/jpack'); })->end()
 						->end()
 					->end()
 				->end()

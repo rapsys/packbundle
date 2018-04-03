@@ -17,14 +17,20 @@ class RapsysPackExtension extends Extension {
 	 * {@inheritdoc}
 	 */
 	public function load(array $configs, ContainerBuilder $container) {
-		$configuration = new Configuration($container->getParameter('kernel.project_dir').'/web/');
-		$config = $this->processConfiguration($configuration, $configs);
-
+		//Load configuration
 		$loader = new Loader\YamlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
 		$loader->load('services.yml');
+
+		//Load configuration
+		$configuration = $this->getConfiguration($configs, $container);
+		$config = $this->processConfiguration($configuration, $configs);
 	}
 
+	/**
+	 * {@inheritdoc}
+	 */
 	public function getConfiguration(array $configs, ContainerBuilder $container) {
+		//Get configuration instance with resolved web path
 		return new Configuration($container->getParameter('kernel.project_dir').'/web/');
 	}
 }
