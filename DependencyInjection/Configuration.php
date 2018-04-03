@@ -13,7 +13,7 @@ use Symfony\Component\Process\ExecutableFinder;
  */
 class Configuration implements ConfigurationInterface {
 	//Constructor required to derivate prefix from kernel.project_dir
-	public function __construct(\string $projectDir) {
+	public function __construct($projectDir) {
 		$this->projectDir = $projectDir;
 	}
 
