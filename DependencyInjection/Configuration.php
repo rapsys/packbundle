@@ -48,6 +48,7 @@ class Configuration implements ConfigurationInterface {
 		$defaults = [
 			'config' => [
 				'prefix' => $this->projectDir,
+				'name' => 'asset_url',
 				'scheme' => 'https://',
 				'timeout' => (int)ini_get('default_socket_timeout'),
 				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.0.2',
@@ -58,14 +59,20 @@ class Configuration implements ConfigurationInterface {
 				'js' => 'js/*.pack.js',
 				'img' => 'img/*.pack.jpg'
 			],
-			'filter' => [
+			'filters' => [
 				'css' => [
 					'class' => 'Rapsys\PackBundle\Twig\Filter\CPackFilter',
-					'args' => [ $finder->find('cpack', '/usr/local/bin/cpack') ]
+					'args' => [
+						$finder->find('cpack', '/usr/local/bin/cpack'),
+						'minify'
+					]
 				],
 				'js' => [
 					'class' => 'Rapsys\PackBundle\Twig\Filter\JPackFilter',
-					'args' => [ $finder->find('jpack', '/usr/local/bin/jpack') ]
+					'args' => [
+						$finder->find('jpack', '/usr/local/bin/jpack'),
+						'best'
+					]
 				],
 				'img' => [
 					'class' => 'Rapsys\PackBundle\Twig\Filter\IPackFilter',
@@ -88,6 +95,7 @@ class Configuration implements ConfigurationInterface {
 								->addDefaultsIfNotSet()
 								->children()
 									->scalarNode('prefix')->isRequired()->defaultValue($defaults['config']['prefix'])->end()
+									->scalarNode('name')->isRequired()->defaultValue($defaults['config']['name'])->end()
 									->scalarNode('scheme')->isRequired()->defaultValue($defaults['config']['scheme'])->end()
 									->integerNode('timeout')->isRequired()->min(0)->defaultValue($defaults['config']['timeout'])->end()
 									->scalarNode('agent')->isRequired()->defaultValue($defaults['config']['agent'])->end()
@@ -103,7 +111,7 @@ class Configuration implements ConfigurationInterface {
 									->scalarNode('img')->isRequired()->defaultValue($defaults['output']['img'])->end()
 								->end()
 							->end()
-							->arrayNode('filter')
+							->arrayNode('filters')
 								->isRequired()
 								->addDefaultsIfNotSet()
 								->children()
@@ -114,12 +122,12 @@ class Configuration implements ConfigurationInterface {
 											->children()
 												->scalarNode('class')
 													->isRequired()
-													->defaultValue($defaults['filter']['css']['class'])
+													->defaultValue($defaults['filters']['css']['class'])
 												->end()
 												->arrayNode('args')
 													->isRequired()
 													->treatNullLike(array())
-													->defaultValue($defaults['filter']['css']['args'])
+													->defaultValue($defaults['filters']['css']['args'])
 													->scalarPrototype()->end()
 												->end()
 											->end()
@@ -132,12 +140,12 @@ class Configuration implements ConfigurationInterface {
 											->children()
 												->scalarNode('class')
 													->isRequired()
-													->defaultValue($defaults['filter']['js']['class'])
+													->defaultValue($defaults['filters']['js']['class'])
 												->end()
 												->arrayNode('args')
 													->isRequired()
 													->treatNullLike(array())
-													->defaultValue($defaults['filter']['js']['args'])
+													->defaultValue($defaults['filters']['js']['args'])
 													->scalarPrototype()->end()
 												->end()
 											->end()
@@ -150,12 +158,12 @@ class Configuration implements ConfigurationInterface {
 											->children()
 												->scalarNode('class')
 													->isRequired()
-													->defaultValue($defaults['filter']['img']['class'])
+													->defaultValue($defaults['filters']['img']['class'])
 												->end()
 												->arrayNode('args')
 													->isRequired()
 													->treatNullLike(array())
-													->defaultValue($defaults['filter']['img']['args'])
+													->defaultValue($defaults['filters']['img']['args'])
 													->scalarPrototype()->end()
 												->end()
 											->end()
