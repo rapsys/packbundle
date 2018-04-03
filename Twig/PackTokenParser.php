@@ -3,7 +3,6 @@
 namespace Rapsys\PackBundle\Twig;
 
 use Symfony\Component\HttpKernel\Config\FileLocator;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Asset\Packages;
 
 class PackTokenParser extends \Twig_TokenParser {
@@ -13,55 +12,42 @@ class PackTokenParser extends \Twig_TokenParser {
 	 * Constructor.
 	 *
 	 * @param class		$fileLocator		The FileLocator instance
-	 * @param class		$containerInterface	The Container Interface instance
 	 * @param class		$assetsPackages		The Assets Packages instance
-	 * @param string	$prefix			The prefix path
+	 * @param string	$config			The config path
 	 * @param string	$tag			The tag name
 	 * @param string	$output			The default output string
 	 * @param array		$filters		The default filters array
 	 */
-	public function __construct(FileLocator $fileLocator, ContainerInterface $containerInterface, Packages $assetsPackages, $prefix, $tag, $output, $filters) {
+	public function __construct(FileLocator $fileLocator, Packages $assetsPackages, $config, $tag, $output, $filters) {
 		$this->fileLocator		= $fileLocator;
-		$this->containerInterface	= $containerInterface;
 		$this->assetsPackages		= $assetsPackages;
-		$this->prefix			= $prefix;
+
+		//Set prefix
+		$this->prefix			= $config['prefix'];
+
+		//Set name
+		$this->name			= $config['name'];
+
+		//Set scheme
+		$this->scheme			= $config['scheme'];
+
+		//Set timeout
+		$this->timeout			= $config['timeout'];
+
+		//Set agent
+		$this->agent			= $config['agent'];
+
+		//Set redirect
+		$this->redirect			= $config['redirect'];
+
+		//Set tag
 		$this->tag			= $tag;
+
+		//Set output
 		$this->output			= $output;
+
+		//Set filters
 		$this->filters			= $filters;
-
-		if ($this->containerInterface->hasParameter('rapsys_pack')) {
-			if ($parameters = $this->containerInterface->getParameter('rapsys_pack')) {
-				if (isset($parameters['timeout'])) {
-					$timeout = $parameters['timeout'];
-				} elseif (isset($parameters['agent'])) {
-					$userAgent = $parameters['agent'];
-				} elseif (isset($parameters['redirect'])) {
-					$redirect = $parameters['redirect'];
-				}
-			}
-		}
-
-		//Set http default timeout
-		$this->timeout = ini_get('default_socket_timeout');
-		//Set http default user agent
-		$this->userAgent = ini_get('user_agent');
-		//Set http default redirect
-		$this->redirect = 20;
-
-		//Try to load service defaults
-		if ($this->containerInterface->hasParameter('rapsys_pack')) {
-			if ($parameters = $this->containerInterface->getParameter('rapsys_pack')) {
-				if (!empty($parameters['timeout'])) {
-					$this->timeout = $parameters['timeout'];
-				}
-				if (!empty($parameters['agent'])) {
-					$this->userAgent = $parameters['agent'];
-				}
-				if (!empty($parameters['redirect'])) {
-					$this->redirect = $parameters['redirect'];
-				}
-			}
-		}
 	}
 
 	public function getTag() {
@@ -73,7 +59,7 @@ class PackTokenParser extends \Twig_TokenParser {
 		$stream = $this->parser->getStream();
 
 		$inputs = array();
-		$name = 'asset_url';
+		$name = $this->name;
 		$output = $this->output;
 		$filters = $this->filters;
 
@@ -83,7 +69,7 @@ class PackTokenParser extends \Twig_TokenParser {
 			if ($stream->test(\Twig_Token::STRING_TYPE)) {
 				// '@jquery', 'js/src/core/*', 'js/src/extra.js'
 				$inputs[] = $stream->next()->getValue();
-			} elseif ($stream->test(\Twig_Token::NAME_TYPE, 'filter')) {
+			} elseif ($stream->test(\Twig_Token::NAME_TYPE, 'filters')) {
 				// filter='yui_js'
 				$stream->next();
 				$stream->expect(\Twig_Token::OPERATOR_TYPE, '=');
@@ -120,18 +106,8 @@ class PackTokenParser extends \Twig_TokenParser {
 		for($k = 0; $k < count($inputs); $k++) {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
-				//Default scheme
-				$scheme = 'https://';
-				//Try to load service scheme
-				if ($this->containerInterface->hasParameter('rapsys_pack')) {
-					if ($parameters = $this->containerInterface->getParameter('rapsys_pack')) {
-						if (isset($parameters['scheme'])) {
-							$scheme = $parameters['scheme'];
-						}
-					}
-				}
 				//Fix url
-				$inputs[$k] = $scheme.substr($inputs[$k], 2);
+				$inputs[$k] = $this->scheme.substr($inputs[$k], 2);
 			//Deal with non url path
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
@@ -175,7 +151,7 @@ class PackTokenParser extends \Twig_TokenParser {
 			array(
 				'http' => array(
 					'timeout' => $this->timeout,
-					'user_agent' => $this->userAgent,
+					'user_agent' => $this->agent,
 					'redirect' => $this->redirect,
 				)
 			)
@@ -200,14 +176,21 @@ class PackTokenParser extends \Twig_TokenParser {
 		if (!empty($filters)) {
 			//Apply all filters
 			foreach($filters as $filter) {
-				//Prefix with filter
-				#$filter = __NAMESPACE__.'\\Filter\\'.$filter;
-				//Init tool object
-				$tool = new $filter($this->containerInterface, $stream->getSourceContext(), $token->getLine());
+				//Init args
+				$args = array($stream->getSourceContext(), $token->getLine());
+				//Check if args is available
+				if (!empty($filter['args'])) {
+					//Append args if provided
+					$args += $filter['args'];
+				}
+				//Init reflection
+				$reflection = new \ReflectionClass($filter['class']);
+				//Set instance args
+				$tool = $reflection->newInstanceArgs($args);
 				//Process content
 				$content = $tool->process($content);
 				//Remove object
-				unset($tool);
+				unset($tool, $reflection);
 			}
 		} else {
 			#TODO: trigger error about empty filters ?
@@ -243,7 +226,8 @@ class PackTokenParser extends \Twig_TokenParser {
 		//XXX: was next line to support module specific asset configuration
 		#if (($output = $this->assetsPackages->getUrl($output, 'rapsys_pack')) === false) {
 		if (($output = $this->assetsPackages->getUrl($output)) === false) {
-			throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s with package %s', $output, 'rapsys_pack'), $token->getLine(), $stream->getSourceContext());
+			#throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s with package %s', $output, 'rapsys_pack'), $token->getLine(), $stream->getSourceContext());
+			throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Send pack node
