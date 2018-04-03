@@ -33,8 +33,8 @@ class PackTokenParser extends \Twig_TokenParser {
 			if ($parameters = $this->containerInterface->getParameter('rapsys_pack')) {
 				if (isset($parameters['timeout'])) {
 					$timeout = $parameters['timeout'];
-				} elseif (isset($parameters['user_agent'])) {
-					$userAgent = $parameters['user_agent'];
+				} elseif (isset($parameters['agent'])) {
+					$userAgent = $parameters['agent'];
 				} elseif (isset($parameters['redirect'])) {
 					$redirect = $parameters['redirect'];
 				}
@@ -54,8 +54,8 @@ class PackTokenParser extends \Twig_TokenParser {
 				if (!empty($parameters['timeout'])) {
 					$this->timeout = $parameters['timeout'];
 				}
-				if (!empty($parameters['user_agent'])) {
-					$this->userAgent = $parameters['user_agent'];
+				if (!empty($parameters['agent'])) {
+					$this->userAgent = $parameters['agent'];
 				}
 				if (!empty($parameters['redirect'])) {
 					$this->redirect = $parameters['redirect'];
@@ -201,7 +201,7 @@ class PackTokenParser extends \Twig_TokenParser {
 			//Apply all filters
 			foreach($filters as $filter) {
 				//Prefix with filter
-				$filter = __NAMESPACE__.'\\Filter\\'.$filter;
+				#$filter = __NAMESPACE__.'\\Filter\\'.$filter;
 				//Init tool object
 				$tool = new $filter($this->containerInterface, $stream->getSourceContext(), $token->getLine());
 				//Process content
@@ -215,8 +215,8 @@ class PackTokenParser extends \Twig_TokenParser {
 
 		//Create output dir on demand
 		if (!is_dir($parent = $dir = dirname($this->prefix.$output))) {
-			//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
 			try {
+				//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
 				mkdir($dir, 0777, true);
 			} catch (\Exception $e) {
 				throw new \Twig_Error_Syntax(sprintf('Unable to create directory: %s', $dir), $token->getLine(), $stream->getSourceContext());
@@ -240,7 +240,9 @@ class PackTokenParser extends \Twig_TokenParser {
 		}
 
 		//Retrieve asset uri
-		if (($output = $this->assetsPackages->getUrl($output, 'rapsys_pack')) === false) {
+		//XXX: was next line to support module specific asset configuration
+		#if (($output = $this->assetsPackages->getUrl($output, 'rapsys_pack')) === false) {
+		if (($output = $this->assetsPackages->getUrl($output)) === false) {
 			throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s with package %s', $output, 'rapsys_pack'), $token->getLine(), $stream->getSourceContext());
 		}
 

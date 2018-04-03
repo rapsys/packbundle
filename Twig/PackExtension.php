@@ -28,11 +28,11 @@ class PackExtension extends \Twig_Extension {
 		$this->ioutput = 'img/*.pack.jpg';
 
 		//Set default cfilter
-		$this->cfilter = array('CPackFilter');
+		$this->cfilter = array('Rapsys\PackBundle\Twig\Filter\CPackFilter');
 		//Set default jfilter
-		$this->jfilter = array('JPackFilter');
+		$this->jfilter = array('Rapsys\PackBundle\Twig\Filter\JPackFilter');
 		//Set default ifilter
-		$this->ifilter = array('IPackFilter');
+		$this->ifilter = array('Rapsys\PackBundle\Twig\Filter\IPackFilter');
 
 		//Load configuration
 		if ($containerInterface->hasParameter('rapsys_pack')) {
