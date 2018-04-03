@@ -24,6 +24,11 @@ class RapsysPackExtension extends Extension {
 		//Load configuration
 		$configuration = $this->getConfiguration($configs, $container);
 		$config = $this->processConfiguration($configuration, $configs);
+
+		//Set default config in parameter
+		if (!$container->hasParameter($alias = $this->getAlias())) {
+			$container->setParameter($alias, $config[$alias]);
+		}
 	}
 
 	/**

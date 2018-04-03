@@ -60,13 +60,16 @@ class Configuration implements ConfigurationInterface {
 			],
 			'filter' => [
 				'css' => [
-					'Rapsys\PackBundle\Twig\Filter\CPackFilter' => [$finder->find('cpack', '/usr/local/bin/cpack')]
+					'class' => 'Rapsys\PackBundle\Twig\Filter\CPackFilter',
+					'args' => [ $finder->find('cpack', '/usr/local/bin/cpack') ]
 				],
 				'js' => [
-					'Rapsys\PackBundle\Twig\Filter\JPackFilter' => [$finder->find('jpack', '/usr/local/bin/jpack')]
+					'class' => 'Rapsys\PackBundle\Twig\Filter\JPackFilter',
+					'args' => [ $finder->find('jpack', '/usr/local/bin/jpack') ]
 				],
 				'img' => [
-					'Rapsys\PackBundle\Twig\Filter\IPackFilter' => []
+					'class' => 'Rapsys\PackBundle\Twig\Filter\IPackFilter',
+					'args' => []
 				],
 			]
 		];
@@ -75,11 +78,9 @@ class Configuration implements ConfigurationInterface {
 		$treeBuilder
 			//Parameters
 			->root('parameters')
-				->isRequired()
 				->addDefaultsIfNotSet()
 				->children()
 					->arrayNode('rapsys_pack')
-						->isRequired()
 						->addDefaultsIfNotSet()
 						->children()
 							->arrayNode('config')
@@ -107,22 +108,58 @@ class Configuration implements ConfigurationInterface {
 								->addDefaultsIfNotSet()
 								->children()
 									->arrayNode('css')
-										->isRequired()
-										->treatNullLike(array())
-										->scalarPrototype()->end()
-										->defaultValue($defaults['filter']['css'])
+										#XXX: undocumented, see Symfony/Component/Config/Definition/Builder/ArrayNodeDefinition.php +513
+										->addDefaultChildrenIfNoneSet()
+										->arrayPrototype()
+											->children()
+												->scalarNode('class')
+													->isRequired()
+													->defaultValue($defaults['filter']['css']['class'])
+												->end()
+												->arrayNode('args')
+													->isRequired()
+													->treatNullLike(array())
+													->defaultValue($defaults['filter']['css']['args'])
+													->scalarPrototype()->end()
+												->end()
+											->end()
+										->end()
 									->end()
 									->arrayNode('js')
-										->isRequired()
-										->treatNullLike(array())
-										->scalarPrototype()->end()
-										->defaultValue($defaults['filter']['js'])
+										#XXX: undocumented, see Symfony/Component/Config/Definition/Builder/ArrayNodeDefinition.php +513
+										->addDefaultChildrenIfNoneSet()
+										->arrayPrototype()
+											->children()
+												->scalarNode('class')
+													->isRequired()
+													->defaultValue($defaults['filter']['js']['class'])
+												->end()
+												->arrayNode('args')
+													->isRequired()
+													->treatNullLike(array())
+													->defaultValue($defaults['filter']['js']['args'])
+													->scalarPrototype()->end()
+												->end()
+											->end()
+										->end()
 									->end()
 									->arrayNode('img')
-										->isRequired()
-										->treatNullLike(array())
-										->scalarPrototype()->end()
-										->defaultValue($defaults['filter']['img'])
+										#XXX: undocumented, see Symfony/Component/Config/Definition/Builder/ArrayNodeDefinition.php +513
+										->addDefaultChildrenIfNoneSet()
+										->arrayPrototype()
+											->children()
+												->scalarNode('class')
+													->isRequired()
+													->defaultValue($defaults['filter']['img']['class'])
+												->end()
+												->arrayNode('args')
+													->isRequired()
+													->treatNullLike(array())
+													->defaultValue($defaults['filter']['img']['args'])
+													->scalarPrototype()->end()
+												->end()
+											->end()
+										->end()
 									->end()
 								->end()
 							->end()
