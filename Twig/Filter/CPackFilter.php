@@ -23,8 +23,8 @@ class CPackFilter implements FilterInterface {
 	//Configure the object
 	public function __construct(ContainerInterface $containerInterface, $fileName, $line) {
 		//Load configuration
-		if ($containerInterface->hasParameter('rapsys_pack.cpackfilter')) {
-			if ($parameters = $containerInterface->getParameter('rapsys_pack.cpackfilter')) {
+		if ($containerInterface->hasParameter('rapsys_pack_cpackfilter')) {
+			if ($parameters = $containerInterface->getParameter('rapsys_pack_cpackfilter')) {
 				foreach($parameters as $k => $v) {
 					if (isset($this->$k)) {
 						$this->$k = $v;

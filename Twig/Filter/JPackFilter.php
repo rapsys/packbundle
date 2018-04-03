@@ -22,8 +22,8 @@ class JPackFilter implements FilterInterface {
 
 	public function __construct(ContainerInterface $containerInterface, $fileName, $line) {
 		//Load configuration
-		if ($containerInterface->hasParameter('rapsys_pack.jpackfilter')) {
-			if ($parameters = $containerInterface->getParameter('rapsys_pack.jpackfilter')) {
+		if ($containerInterface->hasParameter('rapsys_pack_jpackfilter')) {
+			if ($parameters = $containerInterface->getParameter('rapsys_pack_jpackfilter')) {
 				foreach($parameters as $k => $v) {
 					if (isset($this->$k)) {
 						$this->$k = $v;
