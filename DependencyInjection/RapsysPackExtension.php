@@ -36,7 +36,11 @@ class RapsysPackExtension extends Extension {
 	 */
 	public function getConfiguration(array $configs, ContainerBuilder $container) {
 		//Get configuration instance with resolved web path
-		return new Configuration($container->getParameter('kernel.project_dir').'/web/');
+		return new Configuration(
+			is_dir($webDir = ($projectDir = $container->getParameter('kernel.project_dir')).'/web/')?
+			$webDir:
+			$projectDir.'/public/'
+		);
 	}
 
 	/**
