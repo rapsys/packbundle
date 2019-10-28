@@ -4,21 +4,24 @@
     "license": "AGPL-3.0-or-later",
     "type": "symfony-bundle",
     "authors": [{
-	    "name": "Raphaël Gertz",
-	    "email": "packbundle@rapsys.eu"
+        "name": "Raphaël Gertz",
+        "email": "packbundle@rapsys.eu"
     }],
     "autoload": {
-	    "psr-4": {
-		    "Rapsys\\PackBundle\\": ""
-	    }
+        "psr-4": {
+            "Rapsys\\PackBundle\\": ""
+        }
     },
     "require": {
-        "php": ">=5.6",
-        "twig/twig": ">=1.0"
+        "php": "*",
+        "symfony/config": "*",
+        "symfony/dependency-injection": "*",
+        "symfony/asset": "*",
+        "twig/extensions": "*"
     },
     "extra": {
         "branch-alias": {
-		"dev-master": "master"
+            "dev-master": "master"
         }
     }
 }
