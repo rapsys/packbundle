@@ -18,7 +18,6 @@ class RapsysPackExtension extends Extension {
 	 */
 	public function load(array $configs, ContainerBuilder $container) {
 		//Load configuration
-		#$loader = new Loader\YamlFileLoader($container, new FileLocator(\dirname(__DIR__).'/Resources/config'));
 		$loader = new Loader\YamlFileLoader($container, new FileLocator('config/packages'));
 		$loader->load($this->getAlias().'.yaml');
 
