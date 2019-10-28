@@ -22,7 +22,7 @@ class Configuration implements ConfigurationInterface {
 	 */
 	public function getConfigTreeBuilder() {
 		//Get TreeBuilder object
-		$treeBuilder = new TreeBuilder();
+		$treeBuilder = new TreeBuilder('parameters');
 
 		//Get ExecutableFinder object
 		$finder = new ExecutableFinder();
@@ -84,7 +84,7 @@ class Configuration implements ConfigurationInterface {
 		//Here we define the parameters that are allowed to configure the bundle.
 		$treeBuilder
 			//Parameters
-			->root('parameters')
+			->getRootNode()
 				->addDefaultsIfNotSet()
 				->children()
 					->arrayNode('rapsys_pack')
