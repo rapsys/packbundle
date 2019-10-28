@@ -1,5 +1,0 @@
-services:
-    rapsys_pack.twig.pack_extension:
-        class: Rapsys\PackBundle\Twig\PackExtension
-        arguments: [ '@file_locator', '@service_container', '@assets.packages' ]
-        tags: [ twig.extension ]
