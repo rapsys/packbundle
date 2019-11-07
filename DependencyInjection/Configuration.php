@@ -88,7 +88,6 @@ class Configuration implements ConfigurationInterface {
 		$treeBuilder
 			//Parameters
 			->getRootNode()
-				#->cannotBeEmpty()
 				->addDefaultsIfNotSet()
 				->children()
 					->arrayNode('config')
