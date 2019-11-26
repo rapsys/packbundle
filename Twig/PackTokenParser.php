@@ -9,22 +9,23 @@ use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
 use Twig\Node\SetNode;
 use Twig\Node\TextNode;
+use Twig\Source;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
 class PackTokenParser extends AbstractTokenParser {
-	//The tag name
-	private $tag;
+	///The tag name
+	protected $tag;
 
 	/**
 	 * Constructor
 	 *
-	 * @param class		$locator	The FileLocator instance
-	 * @param class		$package	The Assets Package instance
-	 * @param string	$config		The config path
-	 * @param string	$tag		The tag name
-	 * @param string	$output		The default output string
-	 * @param array		$filters	The default filters array
+	 * @param FileLocator      locator The FileLocator instance
+	 * @param PackageInterface package The Assets Package instance
+	 * @param array            config  The config path
+	 * @param string           tag     The tag name
+	 * @param string           output  The default output string
+	 * @param array            filters The default filters array
 	 */
 	public function __construct(FileLocator $locator, PackageInterface $package, $config, $tag, $output, $filters) {
 		//Save locator
@@ -60,6 +61,8 @@ class PackTokenParser extends AbstractTokenParser {
 
 	/**
 	 * Get the tag name
+	 *
+	 * @return string This tag name
 	 */
 	public function getTag() {
 		return $this->tag;
@@ -68,9 +71,9 @@ class PackTokenParser extends AbstractTokenParser {
 	/**
 	 * Parse the token
 	 *
-	 * @param class $token The \Twig\Token instance
+	 * @param Token token The \Twig\Token instance
 	 *
-	 * @return class The PackNode
+	 * @return Node The PackNode
 	 *
 	 * @todo see if we can't add a debug mode behaviour
 	 *
@@ -153,21 +156,10 @@ class PackTokenParser extends AbstractTokenParser {
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
 				if ($inputs[$k][0] == '@') {
-					//Check that we have a / separator between bundle name and path
-					if (($pos = strpos($inputs[$k], '/')) === false) {
-						//TODO: add a @jquery magic feature ?
-						/*
-						header('Content-Type: text/plain');
-						var_dump($inputs);
-						if ($inputs[0] == '@jquery') {
-							exit;
-						}
-						*/
-						throw new Error(sprintf('Invalid input path "%s"', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
-					}
-					//Resolve bundle prefix
-					$inputs[$k] = $this->locator->locate(substr($inputs[$k], 0, $pos)).substr($inputs[$k], $pos + 1);
+					//Resolve it
+					$inputs[$k] = $this->getLocated($inputs[$k], $token->getLine(), $stream->getSourceContext());
 				}
+
 				//Deal with globs
 				if (strpos($inputs[$k], '*') !== false || (($a = strpos($inputs[$k], '{')) !== false && ($b = strpos($inputs[$k], ',', $a)) !== false && strpos($inputs[$k], '}', $b) !== false)) {
 					//Get replacement
@@ -255,12 +247,8 @@ class PackTokenParser extends AbstractTokenParser {
 
 		//Check if we have a bundle path
 		if ($output[0] == '@') {
-			//Check that we have a / separator between bundle name and path
-			if (($pos = strpos($output, '/')) === false) {
-				throw new Error(sprintf('Invalid output path "%s"', $output), $token->getLine(), $stream->getSourceContext());
-			}
-			//Resolve bundle prefix
-			$output = $this->locator->locate(substr($output, 0, $pos)).substr($output, $pos + 1);
+			//Resolve it
+			$output = $this->getLocated($output, $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Create output dir if not present
@@ -323,11 +311,93 @@ class PackTokenParser extends AbstractTokenParser {
 	/**
 	 * Test for tag end
 	 *
-	 * @param class $token The \Twig\Token instance
+	 * @param Token token The \Twig\Token instance
 	 *
 	 * @return bool
 	 */
 	public function testEndTag(Token $token) {
 		return $token->test(['end'.$this->getTag()]);
+	}
+
+	/**
+	 * Get path from bundled file
+	 *
+	 * @param string     file   The bundled file path
+	 * @param int        lineno The template line where the error occurred
+	 * @param Source     source The source context where the error occurred
+	 * @param \Exception prev   The previous exception
+	 *
+	 * @return string The resolved file path
+	 */
+	public function getLocated($file, int $lineno = 0, Source $source = null, \Exception $prev = null) {
+		/*TODO: add a @jquery magic feature ?
+		if ($file == '@jquery') {
+			#header('Content-Type: text/plain');
+			#var_dump($inputs);
+			#exit;
+			return $this->config['jquery'];
+		}*/
+
+		//Check that we have a / separator between bundle name and path
+		if (($pos = strpos($file, '/')) === false) {
+			throw new Error(sprintf('Invalid path "%s"', $file), $token->getLine(), $stream->getSourceContext());
+		}
+
+		//Set bundle
+		$bundle = substr($file, 0, $pos);
+
+		//Set path
+		$path = substr($file, $pos + 1);
+
+		//Check for bundle suffix presence
+		//XXX: use "bundle templates automatic namespace" mimicked behaviour to find intended bundle and/or path
+		//XXX: see https://symfony.com/doc/4.3/templates.html#bundle-templates
+		if (strlen($bundle) < strlen('Bundle') || substr($bundle, -strlen('Bundle')) !== 'Bundle') {
+			//Append Bundle in an attempt to fix it's naming for locator
+			$bundle .= 'Bundle';
+
+			//Check for public resource prefix presence
+			if (strlen($path) < strlen('Resources/public') || substr($path, 0, strlen('Resources/public')) != 'Resources/public') {
+				//Prepend standard public path
+				$path = 'Resources/public/'.$path;
+			}
+		}
+
+		//Resolve bundle prefix
+		try {
+			$prefix = $this->locator->locate($bundle);
+			//Catch bundle does not exist or is not enabled exception
+		} catch(\InvalidArgumentException $e) {
+			//Fix lowercase first bundle character
+			if ($bundle[1] > 'Z' || $bundle[1] < 'A') {
+				$bundle[1] = strtoupper($bundle[1]);
+			}
+
+			//Detect double bundle suffix
+			if (strlen($bundle) > strlen('_bundleBundle') && substr($bundle, -strlen('_bundleBundle')) == '_bundleBundle') {
+				//Strip extra bundle
+				$bundle = substr($bundle, 0, -strlen('Bundle'));
+			}
+
+			//Convert snake case in camel case
+			if (strpos($bundle, '_') !== false) {
+				//Fix every first character following a _
+				while(($cur = strpos($bundle, '_')) !== false) {
+					$bundle = substr($bundle, 0, $cur).ucfirst(substr($bundle, $cur + 1));
+				}
+			}
+
+			//Resolve fixed bundle prefix
+			try {
+				$prefix = $this->locator->locate($bundle);
+				//Catch bundle does not exist or is not enabled exception again
+			} catch(\InvalidArgumentException $e) {
+				//Bail out as bundle or path is invalid and we have no way to know what was meant
+				throw new Error(sprintf('Invalid bundle name "%s" in path "%s". Maybe you meant "%s"', substr($file, 1, $pos - 1), $file, $bundle.'/'.$path), $token->getLine(), $stream->getSourceContext(), $e);
+			}
+		}
+
+		//Return solved bundle prefix and path
+		return $prefix.$path;
 	}
 }
