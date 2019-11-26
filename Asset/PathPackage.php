@@ -35,14 +35,15 @@ class PathPackage extends BasePackage {
 	 */
 	public function getUrl($path) {
 		//Match url starting with a bundle name
-		if (preg_match('%^@([A-Z][a-zA-Z]*)Bundle/Resources/public(/.*)$%', $path, $matches)) {
+		if (preg_match('%^@([A-Z][a-zA-Z]*?)(?:Bundle/Resources/public)?/(.*)$%', $path, $matches)) {
 			//Handle empty or without replacement pattern basePath
 			if (empty($this->basePath) || strpos($this->basePath, '%s') === false) {
 				//Set path from hardcoded format
-				$path = '/bundles/'.strtolower($matches[1]).$matches[2];
+				$path = '/bundles/'.strtolower($matches[1]).'/'.$matches[2];
 			//Proceed with basePath pattern replacement
 			} else {
 				//Set path from basePath pattern
+				//XXX: basePath has a trailing / added by constructor
 				$path = sprintf($this->basePath, strtolower($matches[1])).$matches[2];
 			}
 		}
