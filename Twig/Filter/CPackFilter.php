@@ -1,9 +1,9 @@
 <?php
 
-// src/Rapsys/PackBundle/Twig/Filter/CPackFilter.php
 namespace Rapsys\PackBundle\Twig\Filter;
 
 use Rapsys\PackBundle\Twig\Filter\FilterInterface;
+use Twig\Error\Error;
 
 class CPackFilter implements FilterInterface {
 	//Default bin
@@ -39,10 +39,10 @@ class CPackFilter implements FilterInterface {
 			if ($this->compress == 'minify') {
 				$this->bin .= ' --minify';
 			//Unknown compress type
-			#XXX: default compression is pretty
+			//XXX: default compression is pretty
 			} elseif ($this->compress !== 'pretty') {
 				//Throw an error on unknown compress
-				throw new \Twig_Error(sprintf('Got unexpected compress for %s: %s', $this->bin, $this->compress), $this->line, $this->fileName);
+				throw new Error(sprintf('Got unexpected compress for %s: %s', $this->bin, $this->compress), $this->line, $this->fileName);
 			}
 		}
 	}
@@ -76,7 +76,7 @@ class CPackFilter implements FilterInterface {
 
 			//Read content from stderr
 			if (($stderr = stream_get_contents($pipes[2]))) {
-				throw new \Twig_Error(sprintf('Got unexpected strerr for %s: %s', $this->bin, $stderr), $this->line, $this->fileName);
+				throw new Error(sprintf('Got unexpected strerr for %s: %s', $this->bin, $stderr), $this->line, $this->fileName);
 			}
 
 			//Close stderr
@@ -84,7 +84,7 @@ class CPackFilter implements FilterInterface {
 
 			//Close process
 			if (($ret = proc_close($proc))) {
-				throw new \Twig_Error(sprintf('Got unexpected non zero return code %s: %d', $this->bin, $ret), $this->line, $this->fileName);
+				throw new Error(sprintf('Got unexpected non zero return code %s: %d', $this->bin, $ret), $this->line, $this->fileName);
 			}
 		}
 
