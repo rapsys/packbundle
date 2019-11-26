@@ -4,8 +4,7 @@ namespace Rapsys\PackBundle\Twig;
 
 use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\Asset\PackageInterface;
-use Twig\Error\RuntimeError;
-use Twig\Error\SyntaxError;
+use Twig\Error\Error;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
 use Twig\Node\SetNode;
@@ -123,7 +122,7 @@ class PackTokenParser extends AbstractTokenParser {
 			//Unexpected token
 			} else {
 				$token = $stream->getCurrent();
-				throw new SyntaxError(sprintf('Unexpected token "%s" of value "%s"', Token::typeToEnglish($token->getType()), $token->getValue()), $token->getLine(), $stream->getSourceContext());
+				throw new Error(sprintf('Unexpected token "%s" of value "%s"', Token::typeToEnglish($token->getType()), $token->getValue()), $token->getLine(), $stream->getSourceContext());
 			}
 		}
 
@@ -164,7 +163,7 @@ class PackTokenParser extends AbstractTokenParser {
 							exit;
 						}
 						*/
-						throw new RuntimeError(sprintf('Invalid input path "%s"', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+						throw new Error(sprintf('Invalid input path "%s"', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 					}
 					//Resolve bundle prefix
 					$inputs[$k] = $this->locator->locate(substr($inputs[$k], 0, $pos)).substr($inputs[$k], $pos + 1);
@@ -177,7 +176,7 @@ class PackTokenParser extends AbstractTokenParser {
 					foreach($replacement as $input) {
 						//Check that it's a file
 						if (!is_file($input)) {
-							throw new RuntimeError(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+							throw new Error(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 						}
 					}
 					//Replace with glob path
@@ -186,7 +185,7 @@ class PackTokenParser extends AbstractTokenParser {
 					$k += count($replacement) - 1;
 				//Check that it's a file
 				} elseif (!is_file($inputs[$k])) {
-					throw new RuntimeError(sprintf('Input path "%s" is not a file', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+					throw new Error(sprintf('Input path "%s" is not a file', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 				}
 			}
 		}
@@ -208,15 +207,18 @@ class PackTokenParser extends AbstractTokenParser {
 			foreach($inputs as $input) {
 				//Try to retrieve content
 				if (($data = file_get_contents($input, false, $ctx)) === false) {
-					throw new RuntimeError(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
+					throw new Error(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
 				}
 				//Append content
 				$content .= $data;
 			}
 		} else {
-			//Trigger error about empty inputs
-			//XXX: There may be a legitimate case where inputs is empty, if so please contact the author
-			throw new RuntimeError('Empty inputs token', $token->getLine(), $stream->getSourceContext());
+			//Trigger error about empty inputs ?
+			//XXX: There may be a legitimate case where we want an empty file or an error, feel free to contact the author in such case
+			#throw new Error('Empty inputs token', $token->getLine(), $stream->getSourceContext());
+
+			//Send an empty node without inputs
+			return new Node();
 		}
 
 		//Check filters
@@ -240,22 +242,22 @@ class PackTokenParser extends AbstractTokenParser {
 				unset($tool, $reflection);
 			}
 		} else {
-			//Trigger error about empty filters
-			//XXX: There may be a legitimate case where filters is empty, if so please contact the author
-			throw new RuntimeError('Empty filters token', $token->getLine(), $stream->getSourceContext());
+			//Trigger error about empty filters ?
+			//XXX: There may be a legitimate case where we want only a merged file or an error, feel free to contact the author in such case
+			#throw new Error('Empty filters token', $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Retrieve asset uri
 		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsys_pack.output.(css,img,js)
 		if (($outputUrl = $this->package->getUrl($output)) === false) {
-			throw new RuntimeError(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
+			throw new Error(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Check if we have a bundle path
 		if ($output[0] == '@') {
 			//Check that we have a / separator between bundle name and path
 			if (($pos = strpos($output, '/')) === false) {
-				throw new RuntimeError(sprintf('Invalid output path "%s"', $output), $token->getLine(), $stream->getSourceContext());
+				throw new Error(sprintf('Invalid output path "%s"', $output), $token->getLine(), $stream->getSourceContext());
 			}
 			//Resolve bundle prefix
 			$output = $this->locator->locate(substr($output, 0, $pos)).substr($output, $pos + 1);
@@ -265,9 +267,11 @@ class PackTokenParser extends AbstractTokenParser {
 		if (!is_dir($dir = dirname($output))) {
 			try {
 				//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
-				mkdir($dir, 0777, true);
+				if (mkdir($dir, 0777, true) === false) {
+					throw new \Exception();
+				}
 			} catch (\Exception $e) {
-				throw new RuntimeError(sprintf('Output directory "%s" do not exists and unable to create it', $dir), $token->getLine(), $stream->getSourceContext());
+				throw new Error(sprintf('Output directory "%s" do not exists and unable to create it', $dir), $token->getLine(), $stream->getSourceContext(), $e);
 			}
 		}
 
@@ -278,7 +282,7 @@ class PackTokenParser extends AbstractTokenParser {
 				throw new \Exception();
 			}
 		} catch(\Exception $e) {
-			throw new RuntimeError(sprintf('Unable to write to: %s', $output.'.new'), $token->getLine(), $stream->getSourceContext());
+			throw new Error(sprintf('Unable to write to: %s', $output.'.new'), $token->getLine(), $stream->getSourceContext(), $e);
 		}
 
 		//Remove old file
@@ -288,17 +292,17 @@ class PackTokenParser extends AbstractTokenParser {
 					throw new \Exception();
 				}
 			} catch (\Exception $e) {
-				throw new RuntimeError(sprintf('Unable to unlink: %s', $output), $token->getLine(), $stream->getSourceContext());
+				throw new Error(sprintf('Unable to unlink: %s', $output), $token->getLine(), $stream->getSourceContext(), $e);
 			}
 		}
 
 		//Rename it
 		try {
 			if (rename($output.'.new', $output) === false) {
-					throw new \Exception();
+				throw new \Exception();
 			}
 		} catch (\Exception $e) {
-			throw new RuntimeError(sprintf('Unable to rename: %s to %s', $output.'.new', $output), $token->getLine(), $stream->getSourceContext());
+			throw new Error(sprintf('Unable to rename: %s to %s', $output.'.new', $output), $token->getLine(), $stream->getSourceContext(), $e);
 		}
 
 		//Set name in context key
