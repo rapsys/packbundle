@@ -48,9 +48,9 @@ class Configuration implements ConfigurationInterface {
 				'redirect' => 5
 			],
 			'output' => [
-				'css' => '@RapsysPackBundle/Resources/public/css/*.pack.css',
-				'js' => '@RapsysPackBundle/Resources/public/js/*.pack.js',
-				'img' => '@RapsysPackBundle/Resources/public/img/*.pack.jpg'
+				'css' => '@RapsysPack/css/*.pack.css',
+				'js' =>  '@RapsysPack/js/*.pack.js',
+				'img' => '@RapsysPack/img/*.pack.jpg'
 			],
 			'filters' => [
 				'css' => [
