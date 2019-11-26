@@ -4,9 +4,10 @@ namespace Rapsys\PackBundle\Twig;
 
 use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use Symfony\Component\Asset\Packages;
+use Symfony\Component\Asset\PackageInterface;
+use Twig\Extension\AbstractExtension;
 
-class PackExtension extends \Twig_Extension {
+class PackExtension extends AbstractExtension {
 	//The config
 	private $config;
 
@@ -16,28 +17,34 @@ class PackExtension extends \Twig_Extension {
 	//The filter
 	private $filters;
 
-	public function __construct(FileLocator $fileLocator, ContainerInterface $containerInterface, Packages $assetsPackages) {
+	//The file locator
+	protected $locator;
+
+	//The assets package
+	protected $package;
+
+	public function __construct(FileLocator $locator, ContainerInterface $container, PackageInterface $package) {
 		//Set file locator
-		$this->fileLocator = $fileLocator;
-		//Set container interface
-		$this->containerInterface = $containerInterface;
+		$this->locator = $locator;
+
 		//Set assets packages
-		$this->assetsPackages = $assetsPackages;
+		$this->package = $package;
 
 		//Retrieve bundle config
-		if ($parameters = $containerInterface->getParameter($this->getAlias())) {
-			foreach($parameters as $k => $v) {
-				$this->$k = $v;
+		if ($parameters = $container->getParameter($this->getAlias())) {
+			//Set config, output and filters arrays
+			foreach(['config', 'output', 'filters'] as $k) {
+				$this->$k = $parameters[$k];
 			}
 		}
 	}
 
 	public function getTokenParsers() {
-		return array(
-			new PackTokenParser($this->fileLocator, $this->assetsPackages, $this->config, 'stylesheet', $this->output['css'], $this->filters['css']),
-			new PackTokenParser($this->fileLocator, $this->assetsPackages, $this->config, 'javascript', $this->output['js'], $this->filters['js']),
-			new PackTokenParser($this->fileLocator, $this->assetsPackages, $this->config, 'image', $this->output['img'], $this->filters['img'])
-		);
+		return [
+			new PackTokenParser($this->locator, $this->package, $this->config, 'stylesheet', $this->output['css'], $this->filters['css']),
+			new PackTokenParser($this->locator, $this->package, $this->config, 'javascript', $this->output['js'], $this->filters['js']),
+			new PackTokenParser($this->locator, $this->package, $this->config, 'image', $this->output['img'], $this->filters['img'])
+		];
 	}
 
 	/**
