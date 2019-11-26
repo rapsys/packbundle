@@ -12,14 +12,6 @@ use Symfony\Component\Process\ExecutableFinder;
  * To learn more see {@link http://symfony.com/doc/current/cookbook/bundles/configuration.html}
  */
 class Configuration implements ConfigurationInterface {
-	//The project dir
-	private $projectDir;
-
-	//Constructor required to derivate prefix from kernel.project_dir
-	public function __construct($projectDir) {
-		$this->projectDir = $projectDir;
-	}
-
 	/**
 	 * {@inheritdoc}
 	 */
@@ -30,31 +22,29 @@ class Configuration implements ConfigurationInterface {
 		//Get ExecutableFinder object
 		$finder = new ExecutableFinder();
 
-		#TODO: see how we deal with asset url generation: see Rapsys/PackBundle/Twig/PackTokenParser.php +243
-		#framework:
-		#    assets:
-		#        packages:
-		#            rapsys_pack:
-		#                base_path: '/'
-		#                version: ~
-		#
-		## Force cache disable to regenerate resources each time
-		##twig:
-		##    cache: ~
-
-		//TODO: see https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/DependencyInjection/Configuration.php for default value and description
-		//TODO: see http://symfony.com/doc/current/components/config/definition.html
-		//TODO: see https://github.com/symfony/assetic-bundle/blob/master/DependencyInjection/Configuration.php#L63
-		//TODO: use bin/console config:dump-reference to dump class infos
+		/**
+		 * XXX: Note about the output schemes
+		 *
+		 * The output files are written based on the output.<ext> scheme with the * replaced by the hashed path of packed files
+		 *
+		 * The following service configuration make twig render the output file path with the right '/' basePath prefix:
+		 * services:
+		 *     assets.pack_package:
+		 *         class: Rapsys\PackBundle\Asset\PathPackage
+		 *         arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
+		 *     rapsys_pack.twig.pack_extension:
+		 *         class: Rapsys\PackBundle\Twig\PackExtension
+		 *         arguments: [ '@file_locator', '@service_container', '@assets.pack_package' ]
+		 *         tags: [ twig.extension ]
+		 */
 
 		//The bundle default values
 		$defaults = [
 			'config' => [
-				'prefix' => $this->projectDir,
 				'name' => 'asset_url',
 				'scheme' => 'https://',
 				'timeout' => (int)ini_get('default_socket_timeout'),
-				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.1.1',
+				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.1.3',
 				'redirect' => 5
 			],
 			'output' => [
@@ -85,6 +75,11 @@ class Configuration implements ConfigurationInterface {
 		];
 
 		//Here we define the parameters that are allowed to configure the bundle.
+		//XXX: see https://github.com/symfony/symfony/blob/master/src/Symfony/Bundle/FrameworkBundle/DependencyInjection/Configuration.php for default value and description
+		//XXX: see http://symfony.com/doc/current/components/config/definition.html
+		//XXX: see https://github.com/symfony/assetic-bundle/blob/master/DependencyInjection/Configuration.php#L63
+		//XXX: see php bin/console config:dump-reference rapsys_pack to dump default config
+		//XXX: see php bin/console debug:config rapsys_pack to dump config
 		$treeBuilder
 			//Parameters
 			->getRootNode()
@@ -93,7 +88,6 @@ class Configuration implements ConfigurationInterface {
 					->arrayNode('config')
 						->addDefaultsIfNotSet()
 						->children()
-							->scalarNode('prefix')->cannotBeEmpty()->defaultValue($defaults['config']['prefix'])->end()
 							->scalarNode('name')->cannotBeEmpty()->defaultValue($defaults['config']['name'])->end()
 							->scalarNode('scheme')->cannotBeEmpty()->defaultValue($defaults['config']['scheme'])->end()
 							->integerNode('timeout')->min(0)->max(300)->defaultValue($defaults['config']['timeout'])->end()
