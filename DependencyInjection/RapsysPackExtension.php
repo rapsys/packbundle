@@ -34,14 +34,6 @@ class RapsysPackExtension extends Extension {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function getConfiguration(array $configs, ContainerBuilder $container) {
-		//Get configuration instance with resolved public path
-		return new Configuration($container->getParameter('kernel.project_dir').'/public/');
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
 	public function getAlias() {
 		return 'rapsys_pack';
 	}
