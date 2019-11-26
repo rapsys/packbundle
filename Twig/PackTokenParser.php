@@ -1,108 +1,150 @@
 <?php
-// src/Rapsys/PackBundle/Twig/PackTokenParser.php
+
 namespace Rapsys\PackBundle\Twig;
 
 use Symfony\Component\HttpKernel\Config\FileLocator;
-use Symfony\Component\Asset\Packages;
+use Symfony\Component\Asset\PackageInterface;
+use Twig\Error\RuntimeError;
+use Twig\Error\SyntaxError;
+use Twig\Node\Expression\AssignNameExpression;
+use Twig\Node\Node;
+use Twig\Node\SetNode;
+use Twig\Node\TextNode;
+use Twig\Token;
+use Twig\TokenParser\AbstractTokenParser;
 
-class PackTokenParser extends \Twig_TokenParser {
+class PackTokenParser extends AbstractTokenParser {
+	//The tag name
 	private $tag;
 
 	/**
-	 * Constructor.
+	 * Constructor
 	 *
-	 * @param class		$fileLocator		The FileLocator instance
-	 * @param class		$assetsPackages		The Assets Packages instance
-	 * @param string	$config			The config path
-	 * @param string	$tag			The tag name
-	 * @param string	$output			The default output string
-	 * @param array		$filters		The default filters array
+	 * @param class		$locator	The FileLocator instance
+	 * @param class		$package	The Assets Package instance
+	 * @param string	$config		The config path
+	 * @param string	$tag		The tag name
+	 * @param string	$output		The default output string
+	 * @param array		$filters	The default filters array
 	 */
-	public function __construct(FileLocator $fileLocator, Packages $assetsPackages, $config, $tag, $output, $filters) {
-		$this->fileLocator		= $fileLocator;
-		$this->assetsPackages		= $assetsPackages;
+	public function __construct(FileLocator $locator, PackageInterface $package, $config, $tag, $output, $filters) {
+		//Save locator
+		$this->locator = $locator;
 
-		//Set prefix
-		$this->prefix			= $config['prefix'];
+		//Save assets package
+		$this->package = $package;
 
 		//Set name
-		$this->name			= $config['name'];
+		$this->name = $config['name'];
 
 		//Set scheme
-		$this->scheme			= $config['scheme'];
+		$this->scheme = $config['scheme'];
 
 		//Set timeout
-		$this->timeout			= $config['timeout'];
+		$this->timeout = $config['timeout'];
 
 		//Set agent
-		$this->agent			= $config['agent'];
+		$this->agent = $config['agent'];
 
 		//Set redirect
-		$this->redirect			= $config['redirect'];
+		$this->redirect = $config['redirect'];
 
 		//Set tag
-		$this->tag			= $tag;
+		$this->tag = $tag;
 
 		//Set output
-		$this->output			= $output;
+		$this->output = $output;
 
 		//Set filters
-		$this->filters			= $filters;
+		$this->filters = $filters;
 	}
 
+	/**
+	 * Get the tag name
+	 */
 	public function getTag() {
 		return $this->tag;
 	}
 
-	public function parse(\Twig_Token $token) {
+	/**
+	 * Parse the token
+	 *
+	 * @param class $token The \Twig\Token instance
+	 *
+	 * @return class The PackNode
+	 *
+	 * @todo see if we can't add a debug mode behaviour
+	 *
+	 * If twig.debug or env=dev (or rapsys_pack.config.debug?) is set, it should be possible to loop on each input
+	 * and process the captured body without applying requested filter.
+	 *
+	 * @todo list:
+	 * - detect debug mode
+	 * - retrieve fixe link from input s%@(Name)Bundle/Resources/public(/somewhere/file.ext)%/bundles/\L\1\E\2%
+	 * - for each inputs:
+	 *   - generate a set asset_url=x
+	 *   - generate a body
+	 */
+	public function parse(Token $token) {
 		$parser = $this->parser;
 		$stream = $this->parser->getStream();
 
-		$inputs = array();
+		$inputs = [];
 		$name = $this->name;
 		$output = $this->output;
 		$filters = $this->filters;
 
 		$content = '';
 
-		while (!$stream->test(\Twig_Token::BLOCK_END_TYPE)) {
-			if ($stream->test(\Twig_Token::STRING_TYPE)) {
-				// '@jquery', 'js/src/core/*', 'js/src/extra.js'
+		//Process the token block until end
+		while (!$stream->test(Token::BLOCK_END_TYPE)) {
+			//The files to process
+			if ($stream->test(Token::STRING_TYPE)) {
+				//'somewhere/somefile.(css,img,js)' 'somewhere/*' '@jquery'
 				$inputs[] = $stream->next()->getValue();
-			} elseif ($stream->test(\Twig_Token::NAME_TYPE, 'filters')) {
-				// filter='yui_js'
+			//The filters token
+			} elseif ($stream->test(Token::NAME_TYPE, 'filters')) {
+				//filter='yui_js'
 				$stream->next();
-				$stream->expect(\Twig_Token::OPERATOR_TYPE, '=');
-				$filters = array_merge($filters, array_filter(array_map('trim', explode(',', $stream->expect(\Twig_Token::STRING_TYPE)->getValue()))));
-			} elseif ($stream->test(\Twig_Token::NAME_TYPE, 'output')) {
-				// output='js/packed/*.js' OR output='js/core.js'
+				$stream->expect(Token::OPERATOR_TYPE, '=');
+				$filters = array_merge($filters, array_filter(array_map('trim', explode(',', $stream->expect(Token::STRING_TYPE)->getValue()))));
+			//The output token
+			} elseif ($stream->test(Token::NAME_TYPE, 'output')) {
+				//output='js/packed/*.js' OR output='js/core.js'
 				$stream->next();
-				$stream->expect(\Twig_Token::OPERATOR_TYPE, '=');
-				$output = $stream->expect(\Twig_Token::STRING_TYPE)->getValue();
-			} elseif ($stream->test(\Twig_Token::NAME_TYPE, 'name')) {
-				// name='core_js'
+				$stream->expect(Token::OPERATOR_TYPE, '=');
+				$output = $stream->expect(Token::STRING_TYPE)->getValue();
+			//The name token
+			} elseif ($stream->test(Token::NAME_TYPE, 'name')) {
+				//name='core_js'
 				$stream->next();
-				$stream->expect(\Twig_Token::OPERATOR_TYPE, '=');
-				$name = $stream->expect(\Twig_Token::STRING_TYPE)->getValue();
+				$stream->expect(Token::OPERATOR_TYPE, '=');
+				$name = $stream->expect(Token::STRING_TYPE)->getValue();
+			//Unexpected token
 			} else {
 				$token = $stream->getCurrent();
-				throw new \Twig_Error_Syntax(sprintf('Unexpected token "%s" of value "%s"', \Twig_Token::typeToEnglish($token->getType()), $token->getValue()), $token->getLine(), $stream->getSourceContext());
+				throw new SyntaxError(sprintf('Unexpected token "%s" of value "%s"', Token::typeToEnglish($token->getType()), $token->getValue()), $token->getLine(), $stream->getSourceContext());
 			}
 		}
 
-		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+		//Process end block
+		$stream->expect(Token::BLOCK_END_TYPE);
 
-		$body = $this->parser->subparse(array($this, 'testEndTag'), true);
+		//Process body
+		$body = $this->parser->subparse([$this, 'testEndTag'], true);
 
-		$stream->expect(\Twig_Token::BLOCK_END_TYPE);
+		//Process end block
+		$stream->expect(Token::BLOCK_END_TYPE);
+
+		//TODO: debug mode should be inserted here before the output variable is rewritten
 
 		//Replace star with sha1
 		if (($pos = strpos($output, '*')) !== false) {
-			#XXX: assetic code: substr(sha1(serialize($inputs).serialize($filters).serialize($options)), 0, 7)
+			//XXX: assetic use substr(sha1(serialize($inputs).serialize($filters).serialize($options)), 0, 7)
 			$output = substr($output, 0, $pos).sha1(serialize($inputs).serialize($filters)).substr($output, $pos + 1);
 		}
 
-		//Deal with inputs
+		//Process inputs
 		for($k = 0; $k < count($inputs); $k++) {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
@@ -112,18 +154,20 @@ class PackTokenParser extends \Twig_TokenParser {
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
 				if ($inputs[$k][0] == '@') {
-					//Check that we don't have only a path
+					//Check that we have a / separator between bundle name and path
 					if (($pos = strpos($inputs[$k], '/')) === false) {
-						#TODO: @jquery support (if we really want it)
-						#header('Content-Type: text/plain');
-						#var_dump($inputs);
-						#if ($inputs[0] == '@jquery') {
-						#	exit;
-						#}
-						throw new \Twig_Error_Syntax(sprintf('Invalid input path "%s"', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+						//TODO: add a @jquery magic feature ?
+						/*
+						header('Content-Type: text/plain');
+						var_dump($inputs);
+						if ($inputs[0] == '@jquery') {
+							exit;
+						}
+						*/
+						throw new RuntimeError(sprintf('Invalid input path "%s"', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 					}
 					//Resolve bundle prefix
-					$inputs[$k] = $this->fileLocator->locate(substr($inputs[$k], 0, $pos)).substr($inputs[$k], $pos + 1);
+					$inputs[$k] = $this->locator->locate(substr($inputs[$k], 0, $pos)).substr($inputs[$k], $pos + 1);
 				}
 				//Deal with globs
 				if (strpos($inputs[$k], '*') !== false || (($a = strpos($inputs[$k], '{')) !== false && ($b = strpos($inputs[$k], ',', $a)) !== false && strpos($inputs[$k], '}', $b) !== false)) {
@@ -131,8 +175,9 @@ class PackTokenParser extends \Twig_TokenParser {
 					$replacement = glob($inputs[$k], GLOB_NOSORT|GLOB_BRACE);
 					//Check that these are working files
 					foreach($replacement as $input) {
+						//Check that it's a file
 						if (!is_file($input)) {
-							throw new \Twig_Error_Syntax(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+							throw new RuntimeError(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 						}
 					}
 					//Replace with glob path
@@ -141,20 +186,20 @@ class PackTokenParser extends \Twig_TokenParser {
 					$k += count($replacement) - 1;
 				//Check that it's a file
 				} elseif (!is_file($inputs[$k])) {
-					throw new \Twig_Error_Syntax(sprintf('Input path "%s" is not a file', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
+					throw new RuntimeError(sprintf('Input path "%s" is not a file', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 				}
 			}
 		}
 
 		//Init context
 		$ctx = stream_context_create(
-			array(
-				'http' => array(
+			[
+				'http' => [
 					'timeout' => $this->timeout,
 					'user_agent' => $this->agent,
 					'redirect' => $this->redirect,
-				)
-			)
+				]
+			]
 		);
 
 		//Check inputs
@@ -163,13 +208,15 @@ class PackTokenParser extends \Twig_TokenParser {
 			foreach($inputs as $input) {
 				//Try to retrieve content
 				if (($data = file_get_contents($input, false, $ctx)) === false) {
-					throw new \Twig_Error_Syntax(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
+					throw new RuntimeError(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
 				}
 				//Append content
 				$content .= $data;
 			}
 		} else {
-			#TODO: trigger error about empty inputs ?
+			//Trigger error about empty inputs
+			//XXX: There may be a legitimate case where inputs is empty, if so please contact the author
+			throw new RuntimeError('Empty inputs token', $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Check filters
@@ -177,7 +224,7 @@ class PackTokenParser extends \Twig_TokenParser {
 			//Apply all filters
 			foreach($filters as $filter) {
 				//Init args
-				$args = array($stream->getSourceContext(), $token->getLine());
+				$args = [$stream->getSourceContext(), $token->getLine()];
 				//Check if args is available
 				if (!empty($filter['args'])) {
 					//Append args if provided
@@ -193,48 +240,90 @@ class PackTokenParser extends \Twig_TokenParser {
 				unset($tool, $reflection);
 			}
 		} else {
-			#TODO: trigger error about empty filters ?
+			//Trigger error about empty filters
+			//XXX: There may be a legitimate case where filters is empty, if so please contact the author
+			throw new RuntimeError('Empty filters token', $token->getLine(), $stream->getSourceContext());
 		}
 
-		//Create output dir on demand
-		if (!is_dir($parent = $dir = dirname($this->prefix.$output))) {
+		//Retrieve asset uri
+		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsys_pack.output.(css,img,js)
+		if (($outputUrl = $this->package->getUrl($output)) === false) {
+			throw new RuntimeError(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
+		}
+
+		//Check if we have a bundle path
+		if ($output[0] == '@') {
+			//Check that we have a / separator between bundle name and path
+			if (($pos = strpos($output, '/')) === false) {
+				throw new RuntimeError(sprintf('Invalid output path "%s"', $output), $token->getLine(), $stream->getSourceContext());
+			}
+			//Resolve bundle prefix
+			$output = $this->locator->locate(substr($output, 0, $pos)).substr($output, $pos + 1);
+		}
+
+		//Create output dir if not present
+		if (!is_dir($dir = dirname($output))) {
 			try {
 				//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
 				mkdir($dir, 0777, true);
 			} catch (\Exception $e) {
-				throw new \Twig_Error_Syntax(sprintf('Unable to create directory: %s', $dir), $token->getLine(), $stream->getSourceContext());
+				throw new RuntimeError(sprintf('Output directory "%s" do not exists and unable to create it', $dir), $token->getLine(), $stream->getSourceContext());
 			}
 		}
 
 		//Send file content
-		//XXX: atomic rotation is required to avoid partial content in reverse cache
-		if (file_put_contents($this->prefix.$output.'.new', $content) === false) {
-			throw new \Twig_Error_Syntax(sprintf('Unable to write to: %s', $prefix.$output.'.new'), $token->getLine(), $stream->getSourceContext());
+		//XXX: to avoid partial content in reverse cache we use atomic rotation write, unlink and move
+		try {
+			if (file_put_contents($output.'.new', $content) === false) {
+				throw new \Exception();
+			}
+		} catch(\Exception $e) {
+			throw new RuntimeError(sprintf('Unable to write to: %s', $output.'.new'), $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Remove old file
-		if (is_file($this->prefix.$output) && unlink($this->prefix.$output) === false) {
-			throw new \Twig_Error_Syntax(sprintf('Unable to unlink: %s', $prefix.$output), $token->getLine(), $stream->getSourceContext());
+		if (is_file($output)) {
+			try {
+				if (unlink($output) === false) {
+					throw new \Exception();
+				}
+			} catch (\Exception $e) {
+				throw new RuntimeError(sprintf('Unable to unlink: %s', $output), $token->getLine(), $stream->getSourceContext());
+			}
 		}
 
 		//Rename it
-		if (rename($this->prefix.$output.'.new', $this->prefix.$output) === false) {
-			throw new \Twig_Error_Syntax(sprintf('Unable to rename: %s to %s', $prefix.$output.'.new', $prefix.$output), $token->getLine(), $stream->getSourceContext());
+		try {
+			if (rename($output.'.new', $output) === false) {
+					throw new \Exception();
+			}
+		} catch (\Exception $e) {
+			throw new RuntimeError(sprintf('Unable to rename: %s to %s', $output.'.new', $output), $token->getLine(), $stream->getSourceContext());
 		}
 
-		//Retrieve asset uri
-		//XXX: was next line to support module specific asset configuration
-		#if (($output = $this->assetsPackages->getUrl($output, 'rapsys_pack')) === false) {
-		if (($output = $this->assetsPackages->getUrl($output)) === false) {
-			#throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s with package %s', $output, 'rapsys_pack'), $token->getLine(), $stream->getSourceContext());
-			throw new \Twig_Error_Syntax(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
-		}
+		//Set name in context key
+		$ref = new AssignNameExpression($name, $token->getLine());
 
-		//Send pack node
-		return new PackNode(array('value' => $body), array('inputs' => $inputs, 'filters' => $filters, 'name' => $name, 'output' => $output), $token->getLine(), $this->getTag());
+		//Set output in context value
+		$value = new TextNode($outputUrl, $token->getLine());
+
+		//Send body with context set
+		return new Node([
+			//This define name in twig template by prepending $context['<name>'] = '<output>';
+			new SetNode(true, $ref, $value, $token->getLine(), $this->getTag()),
+			//The tag captured body
+			$body
+		]);
 	}
 
-	public function testEndTag(\Twig_Token $token) {
-		return $token->test(array('end'.$this->getTag()));
+	/**
+	 * Test for tag end
+	 *
+	 * @param class $token The \Twig\Token instance
+	 *
+	 * @return bool
+	 */
+	public function testEndTag(Token $token) {
+		return $token->test(['end'.$this->getTag()]);
 	}
 }
