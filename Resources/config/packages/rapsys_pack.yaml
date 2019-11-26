@@ -1,0 +1,11 @@
+#Services configuration
+services:
+    #Register assets pack package
+    assets.pack_package:
+        class: Rapsys\PackBundle\Asset\PathPackage
+        arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
+    #Register twig pack extension
+    rapsys_pack.twig.pack_extension:
+        class: Rapsys\PackBundle\Twig\PackExtension
+        arguments: [ '@file_locator', '@service_container', '@assets.pack_package' ]
+        tags: [ twig.extension ]
