@@ -31,6 +31,8 @@ class PathPackage extends BasePackage {
 	}
 
 	/**
+	 * @todo Try retrive public dir from the member function BundleNameBundle::getPublicDir() return value ?
+	 * @xxx see https://symfony.com/doc/current/bundles.html#overridding-the-bundle-directory-structure
 	 * {@inheritdoc}
 	 */
 	public function getUrl($path) {

@@ -328,6 +328,9 @@ class PackTokenParser extends AbstractTokenParser {
 	 * @param \Exception prev   The previous exception
 	 *
 	 * @return string The resolved file path
+	 *
+	 * @todo Try retrive public dir from the member function BundleNameBundle::getPublicDir() return value ?
+	 * @xxx see https://symfony.com/doc/current/bundles.html#overridding-the-bundle-directory-structure
 	 */
 	public function getLocated($file, int $lineno = 0, Source $source = null, \Exception $prev = null) {
 		/*TODO: add a @jquery magic feature ?
