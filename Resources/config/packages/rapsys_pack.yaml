@@ -2,7 +2,7 @@
 services:
     #Register assets pack package
     assets.pack_package:
-        class: Rapsys\PackBundle\Asset\PathPackage
+        class: Rapsys\PackBundle\Asset\PackPackage
         arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
     #Register twig pack extension
     rapsys_pack.twig.pack_extension:

@@ -3,13 +3,13 @@
 namespace Rapsys\PackBundle\Asset;
 
 use Symfony\Component\Asset\Context\ContextInterface;
-use Symfony\Component\Asset\PathPackage as BasePackage;
+use Symfony\Component\Asset\PathPackage;
 use Symfony\Component\Asset\VersionStrategy\VersionStrategyInterface;
 
 /**
  * (@inheritdoc)
  */
-class PathPackage extends BasePackage {
+class PackPackage extends PathPackage {
 	//The base path
 	protected $basePath;
 
