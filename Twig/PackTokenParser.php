@@ -2,8 +2,10 @@
 
 namespace Rapsys\PackBundle\Twig;
 
-use Symfony\Component\HttpKernel\Config\FileLocator;
 use Symfony\Component\Asset\PackageInterface;
+use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpKernel\Config\FileLocator;
 use Twig\Error\Error;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
@@ -251,46 +253,30 @@ class PackTokenParser extends AbstractTokenParser {
 			$output = $this->getLocated($output, $token->getLine(), $stream->getSourceContext());
 		}
 
+		//Get filesystem
+		$filesystem = new Filesystem();
+
 		//Create output dir if not present
 		if (!is_dir($dir = dirname($output))) {
 			try {
-				//XXX: set as 0777, symfony umask (0022) will reduce rights (0755)
-				if (mkdir($dir, 0777, true) === false) {
-					throw new \Exception();
-				}
-			} catch (\Exception $e) {
+				//Create dir
+				//XXX: set as 0775, symfony umask (0022) will reduce rights (0755)
+			    $filesystem->mkdir($dir, 0775);
+			} catch (IOExceptionInterface $e) {
+				//Throw error
 				throw new Error(sprintf('Output directory "%s" do not exists and unable to create it', $dir), $token->getLine(), $stream->getSourceContext(), $e);
 			}
 		}
 
 		//Send file content
-		//XXX: to avoid partial content in reverse cache we use atomic rotation write, unlink and move
 		try {
-			if (file_put_contents($output.'.new', $content) === false) {
-				throw new \Exception();
-			}
-		} catch(\Exception $e) {
-			throw new Error(sprintf('Unable to write to: %s', $output.'.new'), $token->getLine(), $stream->getSourceContext(), $e);
-		}
-
-		//Remove old file
-		if (is_file($output)) {
-			try {
-				if (unlink($output) === false) {
-					throw new \Exception();
-				}
-			} catch (\Exception $e) {
-				throw new Error(sprintf('Unable to unlink: %s', $output), $token->getLine(), $stream->getSourceContext(), $e);
-			}
-		}
-
-		//Rename it
-		try {
-			if (rename($output.'.new', $output) === false) {
-				throw new \Exception();
-			}
-		} catch (\Exception $e) {
-			throw new Error(sprintf('Unable to rename: %s to %s', $output.'.new', $output), $token->getLine(), $stream->getSourceContext(), $e);
+			//Write content to file
+			//XXX: this call is (maybe) atomic
+			//XXX: see https://symfony.com/doc/current/components/filesystem.html#dumpfile
+			$filesystem->dumpFile($output, $content);
+		} catch (IOExceptionInterface $e) {
+			//Throw error
+			throw new Error(sprintf('Unable to write to: %s', $output), $token->getLine(), $stream->getSourceContext(), $e);
 		}
 
 		//Set name in context key
