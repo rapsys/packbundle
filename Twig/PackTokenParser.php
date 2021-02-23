@@ -355,7 +355,7 @@ class PackTokenParser extends AbstractTokenParser {
 		//Resolve bundle prefix
 		try {
 			$prefix = $this->locator->locate($bundle);
-			//Catch bundle does not exist or is not enabled exception
+		//Catch bundle does not exist or is not enabled exception
 		} catch(\InvalidArgumentException $e) {
 			//Fix lowercase first bundle character
 			if ($bundle[1] > 'Z' || $bundle[1] < 'A') {
