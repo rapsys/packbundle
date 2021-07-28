@@ -44,7 +44,7 @@ class Configuration implements ConfigurationInterface {
 				'name' => 'asset_url',
 				'scheme' => 'https://',
 				'timeout' => (int)ini_get('default_socket_timeout'),
-				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.1.3',
+				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.1.8',
 				'redirect' => 5
 			],
 			'output' => [
