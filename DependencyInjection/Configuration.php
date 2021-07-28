@@ -54,22 +54,28 @@ class Configuration implements ConfigurationInterface {
 			],
 			'filters' => [
 				'css' => [
-					'class' => 'Rapsys\PackBundle\Twig\Filter\CPackFilter',
-					'args' => [
-						$finder->find('cpack', '/usr/local/bin/cpack'),
-						'minify'
+					0 => [
+						'class' => 'Rapsys\PackBundle\Twig\Filter\CPackFilter',
+						'args' => [
+							$finder->find('cpack', '/usr/local/bin/cpack'),
+							'minify'
+						]
 					]
 				],
 				'js' => [
-					'class' => 'Rapsys\PackBundle\Twig\Filter\JPackFilter',
-					'args' => [
-						$finder->find('jpack', '/usr/local/bin/jpack'),
-						'best'
+					0 => [
+						'class' => 'Rapsys\PackBundle\Twig\Filter\JPackFilter',
+						'args' => [
+							$finder->find('jpack', '/usr/local/bin/jpack'),
+							'best'
+						]
 					]
 				],
 				'img' => [
-					'class' => 'Rapsys\PackBundle\Twig\Filter\IPackFilter',
-					'args' => []
+					0 => [
+						'class' => 'Rapsys\PackBundle\Twig\Filter\IPackFilter',
+						'args' => []
+					]
 				],
 			]
 		];
@@ -114,12 +120,12 @@ class Configuration implements ConfigurationInterface {
 										->scalarNode('class')
 											->isRequired()
 											->cannotBeEmpty()
-											->defaultValue($defaults['filters']['css']['class'])
+											->defaultValue($defaults['filters']['css'][0]['class'])
 										->end()
 										->arrayNode('args')
 											/*->isRequired()*/
 											->treatNullLike(array())
-											->defaultValue($defaults['filters']['css']['args'])
+											->defaultValue($defaults['filters']['css'][0]['args'])
 											->scalarPrototype()->end()
 										->end()
 									->end()
@@ -133,11 +139,11 @@ class Configuration implements ConfigurationInterface {
 										->scalarNode('class')
 											->isRequired()
 											->cannotBeEmpty()
-											->defaultValue($defaults['filters']['js']['class'])
+											->defaultValue($defaults['filters']['js'][0]['class'])
 										->end()
 										->arrayNode('args')
 											->treatNullLike(array())
-											->defaultValue($defaults['filters']['js']['args'])
+											->defaultValue($defaults['filters']['js'][0]['args'])
 											->scalarPrototype()->end()
 										->end()
 									->end()
@@ -151,11 +157,11 @@ class Configuration implements ConfigurationInterface {
 										->scalarNode('class')
 											->isRequired()
 											->cannotBeEmpty()
-											->defaultValue($defaults['filters']['img']['class'])
+											->defaultValue($defaults['filters']['img'][0]['class'])
 										->end()
 										->arrayNode('args')
 											->treatNullLike(array())
-											->defaultValue($defaults['filters']['img']['args'])
+											->defaultValue($defaults['filters']['img'][0]['args'])
 											->scalarPrototype()->end()
 										->end()
 									->end()
