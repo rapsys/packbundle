@@ -1,10 +1,22 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Rapsys\PackBundle\Twig\Filter;
+/*
+ * This file is part of the Rapsys PackBundle package.
+ *
+ * (c) Raphaël Gertz <symfony@rapsys.eu>
+ *
+ * For the full copyright and license information, please view the LICENSE
+ * file that was distributed with this source code.
+ */
 
-use Rapsys\PackBundle\Twig\Filter\FilterInterface;
+namespace Rapsys\PackBundle\Filter;
+
 use Twig\Error\Error;
+use Twig\Source;
 
+/**
+ * {@inheritdoc}
+ */
 class JPackFilter implements FilterInterface {
 	//Default bin
 	private $bin;
@@ -18,9 +30,12 @@ class JPackFilter implements FilterInterface {
 	//Twig template line
 	private $line;
 
-	//Configure the object
-	//XXX: can be clean, shrink, obfuscate or best
-	public function __construct($fileName, $line, $bin = 'jpack', $compress = 'best') {
+	/**
+	 * Setup jpack filter
+	 *
+	 * @xxx compress can be clean, shrink, obfuscate or best
+	 */
+	public function __construct(Source $fileName, int $line, string $bin = 'jpack', string $compress = 'best') {
 		//Set fileName
 		$this->fileName = $fileName;
 
@@ -53,7 +68,10 @@ class JPackFilter implements FilterInterface {
 		}
 	}
 
-	public function process($content) {
+	/**
+	 * {@inheritdoc}
+	 */
+	public function process(string $content): string {
 		//Create descriptors
 		$descriptorSpec = array(
 			0 => array('pipe', 'r'),
@@ -64,7 +82,7 @@ class JPackFilter implements FilterInterface {
 		//Open process
 		if (is_resource($proc = proc_open($this->bin, $descriptorSpec, $pipes))) {
 			//Set stderr as non blocking
-			stream_set_blocking($pipes[2], 0);
+			stream_set_blocking($pipes[2], false);
 
 			//Send content to stdin
 			fwrite($pipes[0], $content);
