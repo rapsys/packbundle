@@ -18,8 +18,11 @@ services:
         class: 'Rapsys\PackBundle\Extension\PackExtension'
         arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
         tags: [ 'twig.extension' ]
-    #Register slugger utils service
+    #Register slugger util service
     rapsys_pack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
         arguments: [ '%env(APP_SECRET)%' ]
         public: true
+    #Register slugger util class alias
+    Rapsys\PackBundle\Util\SluggerUtil:
+        alias: 'rapsys_pack.slugger_util'
