@@ -1,11 +1,12 @@
 <?php
 
-namespace Rapsys\PackBundle\Twig;
+namespace Rapsys\PackBundle\Parser;
 
 use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Config\FileLocator;
+
 use Twig\Error\Error;
 use Twig\Node\Expression\AssignNameExpression;
 use Twig\Node\Node;
@@ -15,21 +16,21 @@ use Twig\Source;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
-class PackTokenParser extends AbstractTokenParser {
+class TokenParser extends AbstractTokenParser {
 	///The tag name
 	protected $tag;
 
 	/**
 	 * Constructor
 	 *
-	 * @param FileLocator      locator The FileLocator instance
-	 * @param PackageInterface package The Assets Package instance
-	 * @param array            config  The config path
-	 * @param string           tag     The tag name
-	 * @param string           output  The default output string
-	 * @param array            filters The default filters array
+	 * @param FileLocator $locator The FileLocator instance
+	 * @param PackageInterface $package The Assets Package instance
+	 * @param array $config The config path
+	 * @param string $tag The tag name
+	 * @param string $output The default output string
+	 * @param array $filters The default filters array
 	 */
-	public function __construct(FileLocator $locator, PackageInterface $package, $config, $tag, $output, $filters) {
+	public function __construct(FileLocator $locator, PackageInterface $package, array $config, string $tag, string $output, array $filters) {
 		//Save locator
 		$this->locator = $locator;
 
@@ -66,30 +67,21 @@ class PackTokenParser extends AbstractTokenParser {
 	 *
 	 * @return string This tag name
 	 */
-	public function getTag() {
+	public function getTag(): string {
 		return $this->tag;
 	}
 
 	/**
 	 * Parse the token
 	 *
-	 * @param Token token The \Twig\Token instance
+	 * @xxx Skip filter when debug mode is enabled is not possible
+	 * @xxx This code is only run once when twig cache is enabled
+	 * @xxx Twig cache value is not avaible in container parameters, maybe in twig env ?
 	 *
+	 * @param Token $token The \Twig\Token instance
 	 * @return Node The PackNode
-	 *
-	 * @todo see if we can't add a debug mode behaviour
-	 *
-	 * If twig.debug or env=dev (or rapsys_pack.config.debug?) is set, it should be possible to loop on each input
-	 * and process the captured body without applying requested filter.
-	 *
-	 * @todo list:
-	 * - detect debug mode
-	 * - retrieve fixe link from input s%@(Name)Bundle/Resources/public(/somewhere/file.ext)%/bundles/\L\1\E\2%
-	 * - for each inputs:
-	 *   - generate a set asset_url=x
-	 *   - generate a body
 	 */
-	public function parse(Token $token) {
+	public function parse(Token $token): Node {
 		$parser = $this->parser;
 		$stream = $this->parser->getStream();
 
@@ -139,8 +131,6 @@ class PackTokenParser extends AbstractTokenParser {
 
 		//Process end block
 		$stream->expect(Token::BLOCK_END_TYPE);
-
-		//TODO: debug mode should be inserted here before the output variable is rewritten
 
 		//Replace star with sha1
 		if (($pos = strpos($output, '*')) !== false) {
@@ -261,7 +251,7 @@ class PackTokenParser extends AbstractTokenParser {
 			try {
 				//Create dir
 				//XXX: set as 0775, symfony umask (0022) will reduce rights (0755)
-			    $filesystem->mkdir($dir, 0775);
+				$filesystem->mkdir($dir, 0775);
 			} catch (IOExceptionInterface $e) {
 				//Throw error
 				throw new Error(sprintf('Output directory "%s" do not exists and unable to create it', $dir), $token->getLine(), $stream->getSourceContext(), $e);
@@ -297,28 +287,25 @@ class PackTokenParser extends AbstractTokenParser {
 	/**
 	 * Test for tag end
 	 *
-	 * @param Token token The \Twig\Token instance
-	 *
-	 * @return bool
+	 * @param Token $token The \Twig\Token instance
+	 * @return bool The token end test result
 	 */
-	public function testEndTag(Token $token) {
+	public function testEndTag(Token $token): bool {
 		return $token->test(['end'.$this->getTag()]);
 	}
 
 	/**
 	 * Get path from bundled file
 	 *
-	 * @param string     file   The bundled file path
-	 * @param int        lineno The template line where the error occurred
-	 * @param Source     source The source context where the error occurred
-	 * @param \Exception prev   The previous exception
+	 * @see https://symfony.com/doc/current/bundles.html#overridding-the-bundle-directory-structure
 	 *
+	 * @param string $file The bundled file path
+	 * @param int $lineno The template line where the error occurred
+	 * @param Source $source The source context where the error occurred
+	 * @param Exception $prev The previous exception
 	 * @return string The resolved file path
-	 *
-	 * @todo Try retrive public dir from the member function BundleNameBundle::getPublicDir() return value ?
-	 * @xxx see https://symfony.com/doc/current/bundles.html#overridding-the-bundle-directory-structure
 	 */
-	public function getLocated($file, int $lineno = 0, Source $source = null, \Exception $prev = null) {
+	public function getLocated(string $file, int $lineno = 0, Source $source = null, \Exception $prev = null): string {
 		/*TODO: add a @jquery magic feature ?
 		if ($file == '@jquery') {
 			#header('Content-Type: text/plain');
