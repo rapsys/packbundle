@@ -84,14 +84,14 @@ class SluggerUtil {
 	/**
 	 * Flatten recursively an array
 	 *
-	 * @param array $data The data tree
+	 * @param array|string $data The data tree
 	 * @param string|null $current The current prefix
 	 * @param string $sep The key separator
 	 * @param string $prefix The key prefix
 	 * @param string $suffix The key suffix
 	 * @return array The flattened data
 	 */
-	public function flatten(array $data, mixed $current = null, string $sep = '.', string $prefix = '', string $suffix = ''): array {
+	public function flatten($data, ?string $current = null, string $sep = '.', string $prefix = '', string $suffix = ''): array {
 		//Init result
 		$ret = [];
 
