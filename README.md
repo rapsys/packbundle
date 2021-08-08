@@ -24,6 +24,14 @@ Add bundle custom repository to your project's `composer.json` file:
 				    "psr-4": {
 					    "Rapsys\\PackBundle\\": ""
 				    }
+                },
+                "require": {
+                    "symfony/asset": "^4.4",
+                    "symfony/flex": "^1.5",
+                    "symfony/framework-bundle": "^4.4",
+                    "symfony/process": "^4.4",
+                    "symfony/twig-bundle": "^4.4",
+                    "twig/extensions": "^1.5"
 			    }
 		    }
 	    }
@@ -82,32 +90,46 @@ class AppKernel extends Kernel
 
 ### Step 3: Configure the Bundle
 
-Verify that you have the configuration file `config/packages/rapsys_pack.yaml`
-with the following content:
+Setup configuration file `config/packages/rapsys_pack.yaml` with the following
+content available in `Resources/config/packages/rapsys_pack.yaml`:
 
 ```yaml
 #Services configuration
 services:
+    #Replace assets.packages definition
+    assets.packages:
+        class: 'Symfony\Component\Asset\Packages'
+        arguments: [ '@rapsys_pack.path_package' ]
+    #Replace assets.context definition
+    assets.context:
+        class: 'Rapsys\PackBundle\Context\RequestStackContext'
+        arguments: [ '@request_stack', '%asset.request_context.base_path%', '%asset.request_context.secure%' ]
     #Register assets pack package
-    assets.pack_package:
-        class: Rapsys\PackBundle\Asset\PathPackage
+    rapsys_pack.path_package:
+        class: 'Rapsys\PackBundle\Package\PathPackage'
         arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
+        public: true
     #Register twig pack extension
-    rapsys_pack.twig.pack_extension:
-        class: Rapsys\PackBundle\Twig\PackExtension
-        arguments: [ '@file_locator', '@service_container', '@assets.pack_package' ]
-        tags: [ twig.extension ]
+    rapsys_pack.pack_extension:
+        class: 'Rapsys\PackBundle\Extension\PackExtension'
+        arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
+        tags: [ 'twig.extension' ]
+    #Register slugger utils service
+    rapsys_pack.slugger_util:
+        class: 'Rapsys\PackBundle\Util\SluggerUtil'
+        arguments: [ '%env(APP_SECRET)%' ]
+        public: true
 ```
 
-Open a command console, enter your project directory and execute the
-following command to see default bundle configuration:
+Open a command console, enter your project directory and execute the following
+command to see default bundle configuration:
 
 ```console
 $ php bin/console config:dump-reference RapsysPackBundle
 ```
 
-Open a command console, enter your project directory and execute the
-following command to see current bundle configuration:
+Open a command console, enter your project directory and execute the following
+command to see current bundle configuration:
 
 ```console
 $ php bin/console debug:config RapsysPackBundle
@@ -115,7 +137,8 @@ $ php bin/console debug:config RapsysPackBundle
 
 ### Step 4: Use the twig extension in your Template
 
-You can use a template like this to generate your first `rapsys_pack` enabled template:
+You can use a template like this to generate your first `rapsys_pack` enabled
+template:
 
 ```twig
 <!DOCTYPE html>
@@ -169,15 +192,14 @@ You can create you own mypackfilter class which call a mypack binary:
 ```php
 <?php
 
-namespace Rapsys\PackBundle\Twig\Filter;
+namespace Rapsys\PackBundle\Filter;
 
-use Rapsys\PackBundle\Twig\Filter\FilterInterface;
 use Twig\Error\Error;
 
 //This class will be defined in the parameter rapsys_pack.filters.(css|img|js).[x].class string
 class MyPackFilter implements FilterInterface {
 	//The constructor arguments ... will be replaced defined in the parameter rapsys_pack.filters.(css|img|js).[x].args array
-	public function __construct($fileName, $line, $bin = 'mypack', ...) {
+	public function __construct(string $fileName, int $line, string $bin = 'mypack', ...) {
 		//Set fileName
 		$this->fileName = $fileName;
 
@@ -200,7 +222,7 @@ class MyPackFilter implements FilterInterface {
 	}
 
 	//Pass merge of all inputs in content
-	public function process($content) {
+	public function process(string $content): string {
 		//Create descriptors
 		$descriptorSpec = array(
 			0 => array('pipe', 'r'),
@@ -211,7 +233,7 @@ class MyPackFilter implements FilterInterface {
 		//Open process
 		if (is_resource($proc = proc_open($this->bin, $descriptorSpec, $pipes))) {
 			//Set stderr as non blocking
-			stream_set_blocking($pipes[2], 0);
+			stream_set_blocking($pipes[2], false);
 
 			//Send content to stdin
 			fwrite($pipes[0], $content);
@@ -247,4 +269,4 @@ class MyPackFilter implements FilterInterface {
 }
 ```
 
-The class is required to get it's arguments through constructor and have a process method.
+The class must implements FilterInterface and get it's arguments through constructor.
