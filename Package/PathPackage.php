@@ -69,7 +69,7 @@ class PathPackage extends Package {
 	 *
 	 * {@inheritdoc}
 	 */
-	public function getUrl(string $path): string {
+	public function getUrl($path): string {
 		//Match url starting with a bundle name
 		if (preg_match('%^@([A-Z][a-zA-Z]*?)(?:Bundle/Resources/public)?/(.*)$%', $path, $matches)) {
 			//Handle empty or without replacement pattern basePath
