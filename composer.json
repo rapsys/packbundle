@@ -5,7 +5,7 @@
     "type": "symfony-bundle",
     "authors": [{
         "name": "Raphaël Gertz",
-        "email": "packbundle@rapsys.eu"
+        "email": "symfony@rapsys.eu"
     }],
     "autoload": {
         "psr-4": {
@@ -13,11 +13,12 @@
         }
     },
     "require": {
-        "php": "*",
-        "symfony/config": "*",
-        "symfony/dependency-injection": "*",
-        "symfony/asset": "*",
-        "twig/extensions": "*"
+        "symfony/asset": "^4.4",
+        "symfony/flex": "^1.5",
+        "symfony/framework-bundle": "^4.4",
+        "symfony/process": "^4.4",
+        "symfony/twig-bundle": "^4.4",
+        "twig/extensions": "^1.5"
     },
     "extra": {
         "branch-alias": {
