@@ -1,11 +1,25 @@
 #Services configuration
 services:
+    #Replace assets.packages definition
+    assets.packages:
+        class: 'Symfony\Component\Asset\Packages'
+        arguments: [ '@rapsys_pack.path_package' ]
+    #Replace assets.context definition
+    assets.context:
+        class: 'Rapsys\PackBundle\Context\RequestStackContext'
+        arguments: [ '@request_stack', '%asset.request_context.base_path%', '%asset.request_context.secure%' ]
     #Register assets pack package
     rapsys_pack.path_package:
-        class: 'Rapsys\PackBundle\Asset\PathPackage'
+        class: 'Rapsys\PackBundle\Package\PathPackage'
         arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
+        public: true
     #Register twig pack extension
     rapsys_pack.pack_extension:
-        class: 'Rapsys\PackBundle\Twig\PackExtension'
-        arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package' ]
+        class: 'Rapsys\PackBundle\Extension\PackExtension'
+        arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
         tags: [ 'twig.extension' ]
+    #Register slugger utils service
+    rapsys_pack.slugger_util:
+        class: 'Rapsys\PackBundle\Util\SluggerUtil'
+        arguments: [ '%env(APP_SECRET)%' ]
+        public: true
