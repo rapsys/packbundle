@@ -21,7 +21,7 @@ services:
     #Register slugger util service
     rapsys_pack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
-        arguments: [ '%env(APP_SECRET)%' ]
+        arguments: [ '%kernel.secret%' ]
         public: true
     #Register slugger util class alias
     Rapsys\PackBundle\Util\SluggerUtil:
