@@ -42,9 +42,12 @@ class SluggerUtil {
 		//Set secret
 		$this->secret = $secret;
 
-		//Pseudo-random alphabet
-		//XXX: use array flip and keys to workaround php "smart" that cast range('0', '9') as int instead of string
-		//XXX: The key count mismatch, count(alpha)>count(rev), resulted in a data corruption due to duplicate numeric values
+		/**
+		 * Pseudo-random alphabet
+		 * @xxx use array flip and keys to workaround php "smart" that cast range('0', '9') as int instead of string
+		 * @xxx The key count mismatch, count(alpha)>count(rev), resulted in a data corruption due to duplicate numeric values
+		 * @todosee required range by json_encode result and short input (0->255 ???)
+		 */
 		$this->alpha = array_keys(array_flip(array_merge(
 			range('^', '[', -1),
 			range('V', 'Z'),
@@ -133,7 +136,8 @@ class SluggerUtil {
 	 */
 	public function serialize(array $data): string {
 		//Return shorted serialized data
-		return $this->short(serialize($data));
+		//XXX: dropped serialize use to prevent short function from dropping utf-8 characters
+		return $this->short(json_encode($data));
 	}
 
 	/**
@@ -146,11 +150,16 @@ class SluggerUtil {
 		//Return string
 		$ret = '';
 
-		//Iterate on each character
-		foreach(str_split($data) as $k => $c) {
-			if (isset($this->rev[$c]) && isset($this->alpha[($this->rev[$c]+$this->offset)%$this->count])) {
-				//XXX: Remap char to an other one
-				$ret .= chr(($this->rev[$c] - $this->offset + $this->count) % $this->count);
+		//With data
+		if (!empty($data)) {
+			//Iterate on each character
+			foreach(str_split($data) as $k => $c) {
+				if (isset($this->rev[$c]) && isset($this->alpha[($this->rev[$c]+$this->offset)%$this->count])) {
+					//XXX: Remap char to an other one
+					$ret .= chr(($this->rev[$c] - $this->offset + $this->count) % $this->count);
+				} else {
+					throw new \RuntimeException(sprintf('Unable to retrieve character: %c', $c));
+				}
 			}
 		}
 
@@ -184,7 +193,7 @@ class SluggerUtil {
 	 */
 	public function unserialize(string $data): array {
 		//Return unshorted unserialized string
-		return unserialize($this->unshort($data));
+		return json_decode($this->unshort($data), true);
 	}
 
 	/**
