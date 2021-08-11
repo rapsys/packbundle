@@ -58,7 +58,7 @@ class PackExtension extends AbstractExtension {
 		$this->package = $package;
 
 		//Retrieve bundle config
-		if ($parameters = $container->getParameter($this->getAlias())) {
+		if ($parameters = $container->getParameter(self::getAlias())) {
 			//Set config, output and filters arrays
 			foreach(['config', 'output', 'filters'] as $k) {
 				$this->$k = $parameters[$k];

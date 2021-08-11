@@ -37,11 +37,11 @@ class RapsysPackExtension extends Extension {
 		//Detect when no user configuration is provided
 		if ($configs === [[]]) {
 			//Prepend default config
-			$container->prependExtensionConfig($this->getAlias(), $config);
+			$container->prependExtensionConfig(self::getAlias(), $config);
 		}
 
 		//Save configuration in parameters
-		$container->setParameter($this->getAlias(), $config);
+		$container->setParameter(self::getAlias(), $config);
 	}
 
 	/**
