@@ -16,8 +16,9 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Config\FileLocator;
 use Twig\Extension\AbstractExtension;
 
-use Rapsys\PackBundle\Util\SluggerUtil;
 use Rapsys\PackBundle\Parser\TokenParser;
+use Rapsys\PackBundle\RapsysPackBundle;
+use Rapsys\PackBundle\Util\SluggerUtil;
 
 /**
  * {@inheritdoc}
@@ -95,6 +96,6 @@ class PackExtension extends AbstractExtension {
 	 * {@inheritdoc}
 	 */
 	public function getAlias(): string {
-		return 'rapsys_pack';
+		return RapsysPackBundle::getAlias();
 	}
 }

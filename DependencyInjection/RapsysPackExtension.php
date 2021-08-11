@@ -14,6 +14,8 @@ namespace Rapsys\PackBundle\DependencyInjection;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Extension\Extension;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 /**
  * This is the class that loads and manages your bundle configuration.
  *
@@ -46,6 +48,6 @@ class RapsysPackExtension extends Extension {
 	 * {@inheritdoc}
 	 */
 	public function getAlias(): string {
-		return 'rapsys_pack';
+		return RapsysPackBundle::getAlias();
 	}
 }

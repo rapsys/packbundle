@@ -15,6 +15,8 @@ use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\Process\ExecutableFinder;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 /**
  * This is the class that validates and merges configuration from your app/config files.
  *
@@ -28,7 +30,7 @@ class Configuration implements ConfigurationInterface {
 	 */
 	public function getConfigTreeBuilder(): TreeBuilder {
 		//Get TreeBuilder object
-		$treeBuilder = new TreeBuilder('rapsys_pack');
+		$treeBuilder = new TreeBuilder(RapsysPackBundle::getAlias());
 
 		//Get ExecutableFinder object
 		$finder = new ExecutableFinder();
