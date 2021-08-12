@@ -23,7 +23,7 @@ class RapsysPackBundle extends Bundle {
 	 *
 	 * @return string The bundle alias
 	 */
-    public function getAlias(): string {
+    public static function getAlias(): string {
 		//With namespace
 		if ($npos = strrpos(static::class, '\\')) {
 			//Set name pos
