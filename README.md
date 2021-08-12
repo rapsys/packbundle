@@ -114,11 +114,14 @@ services:
         class: 'Rapsys\PackBundle\Extension\PackExtension'
         arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
         tags: [ 'twig.extension' ]
-    #Register slugger utils service
+    #Register slugger util service
     rapsys_pack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
-        arguments: [ '%env(APP_SECRET)%' ]
+        arguments: [ '%kernel.secret%' ]
         public: true
+    #Register slugger util class alias
+    Rapsys\PackBundle\Util\SluggerUtil:
+        alias: 'rapsys_pack.slugger_util'
 ```
 
 Open a command console, enter your project directory and execute the following
