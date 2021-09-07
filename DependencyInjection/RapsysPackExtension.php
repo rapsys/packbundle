@@ -42,6 +42,12 @@ class RapsysPackExtension extends Extension {
 
 		//Save configuration in parameters
 		$container->setParameter(self::getAlias(), $config);
+
+		//Set rapsys_pack.public.path key
+		$container->setParameter(self::getAlias().'.public.path', $config['public']['path']);
+
+		//Set rapsys_pack.public.url key
+		$container->setParameter(self::getAlias().'.public.url', $config['public']['url']);
 	}
 
 	/**
