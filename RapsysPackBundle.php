@@ -23,7 +23,7 @@ class RapsysPackBundle extends Bundle {
 	 *
 	 * @return string The bundle alias
 	 */
-    public static function getAlias(): string {
+	public static function getAlias(): string {
 		//With namespace
 		if ($npos = strrpos(static::class, '\\')) {
 			//Set name pos
@@ -45,5 +45,5 @@ class RapsysPackBundle extends Bundle {
 
 		//Return underscored lowercase bundle alias
 		return Container::underscore(substr(static::class, $npos, $bpos));
-    }
+	}
 }
