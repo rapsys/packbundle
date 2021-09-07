@@ -13,6 +13,7 @@ namespace Rapsys\PackBundle\DependencyInjection;
 
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Process\ExecutableFinder;
 
 use Rapsys\PackBundle\RapsysPackBundle;
@@ -30,7 +31,7 @@ class Configuration implements ConfigurationInterface {
 	 */
 	public function getConfigTreeBuilder(): TreeBuilder {
 		//Get TreeBuilder object
-		$treeBuilder = new TreeBuilder(RapsysPackBundle::getAlias());
+		$treeBuilder = new TreeBuilder($alias = RapsysPackBundle::getAlias());
 
 		//Get ExecutableFinder object
 		$finder = new ExecutableFinder();
@@ -74,6 +75,10 @@ class Configuration implements ConfigurationInterface {
 						'args' => []
 					]
 				],
+			],
+			'public' => [
+				'path' => dirname(__DIR__).'/Resources/public',
+				'url' => '/bundles/'.str_replace('_', '', $alias)
 			]
 		];
 
@@ -180,6 +185,13 @@ class Configuration implements ConfigurationInterface {
 									->end()
 								->end()
 							->end()
+						->end()
+					->end()
+					->arrayNode('public')
+						->addDefaultsIfNotSet()
+						->children()
+							->scalarNode('path')->cannotBeEmpty()->defaultValue($defaults['public']['path'])->end()
+							->scalarNode('url')->cannotBeEmpty()->defaultValue($defaults['public']['url'])->end()
 						->end()
 					->end()
 				->end()
