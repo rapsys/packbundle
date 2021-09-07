@@ -16,8 +16,15 @@ services:
     #Register twig pack extension
     rapsys_pack.pack_extension:
         class: 'Rapsys\PackBundle\Extension\PackExtension'
-        arguments: [ '@file_locator', '@service_container', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
+        arguments: [ '@service_container', '@rapsys_pack.intl_util', '@file_locator', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
         tags: [ 'twig.extension' ]
+    #Register intl util service
+    rapsys_pack.intl_util:
+        class: 'Rapsys\PackBundle\Util\IntlUtil'
+        public: true
+    #Register intl util class alias
+    Rapsys\PackBundle\Util\IntlUtil:
+        alias: 'rapsys_pack.intl_util'
     #Register slugger util service
     rapsys_pack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
