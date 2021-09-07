@@ -33,29 +33,35 @@ class PackExtension extends AbstractExtension {
 	//The filter
 	private $filters;
 
+	//The intl util
+	protected $intl;
+
 	//The file locator
 	protected $locator;
 
-	//The slugger instance
-	protected $slugger;
-
 	//The assets package
 	protected $package;
+
+	//The slugger util
+	protected $slugger;
 
 	/**
 	 * @link https://twig.symfony.com/doc/2.x/advanced.html
 	 *
 	 * {@inheritdoc}
 	 */
-	public function __construct(FileLocator $locator, ContainerInterface $container, PackageInterface $package, SluggerUtil $slugger) {
+	public function __construct(ContainerInterface $container, IntlUtil $intl, FileLocator $locator, PackageInterface $package, SluggerUtil $slugger) {
+		//Set intl util
+		$this->intl = $intl;
+
 		//Set file locator
 		$this->locator = $locator;
 
-		//Set slugger
-		$this->slugger = $slugger;
-
 		//Set assets packages
 		$this->package = $package;
+
+		//Set slugger util
+		$this->slugger = $slugger;
 
 		//Retrieve bundle config
 		if ($parameters = $container->getParameter(self::getAlias())) {
@@ -86,9 +92,15 @@ class PackExtension extends AbstractExtension {
 	 */
 	public function getFilters(): array {
 		return [
+			new \Twig\TwigFilter('lcfirst', 'lcfirst'),
+			new \Twig\TwigFilter('ucfirst', 'ucfirst'),
 			new \Twig\TwigFilter('hash', [$this->slugger, 'hash']),
 			new \Twig\TwigFilter('unshort', [$this->slugger, 'unshort']),
-			new \Twig\TwigFilter('short', [$this->slugger, 'short'])
+			new \Twig\TwigFilter('short', [$this->slugger, 'short']),
+			new \Twig\TwigFilter('slug', [$this->slugger, 'slug']),
+			new \Twig\TwigFilter('intldate', [$this->intl, 'date'], ['needs_environment' => true]),
+			new \Twig\TwigFilter('intlnumber', [$this->intl, 'number']),
+			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency'])
 		];
 	}
 
