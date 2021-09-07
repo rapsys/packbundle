@@ -18,6 +18,7 @@ use Twig\Extension\AbstractExtension;
 
 use Rapsys\PackBundle\Parser\TokenParser;
 use Rapsys\PackBundle\RapsysPackBundle;
+use Rapsys\PackBundle\Util\IntlUtil;
 use Rapsys\PackBundle\Util\SluggerUtil;
 
 /**
@@ -100,7 +101,10 @@ class PackExtension extends AbstractExtension {
 			new \Twig\TwigFilter('slug', [$this->slugger, 'slug']),
 			new \Twig\TwigFilter('intldate', [$this->intl, 'date'], ['needs_environment' => true]),
 			new \Twig\TwigFilter('intlnumber', [$this->intl, 'number']),
-			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency'])
+			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency']),
+			new \Twig\TwigFilter('download', 'file_get_contents', [false, null]),
+			new \Twig\TwigFilter('base64_encode', 'base64_encode'),
+			new \Twig\TwigFilter('base64_decode', 'base64_decode')
 		];
 	}
 
