@@ -25,6 +25,14 @@ services:
     #Register intl util class alias
     Rapsys\PackBundle\Util\IntlUtil:
         alias: 'rapsys_pack.intl_util'
+    #Register osm util service
+    rapsys_pack.osm_util:
+        class: 'Rapsys\PackBundle\Util\OsmUtil'
+        arguments: [ '%kernel.project_dir%/var/cache', '%rapsys_pack.public.path%', '%rapsys_pack.public.url%' ]
+        public: true
+    #Register osm util class alias
+    Rapsys\PackBundle\Util\OsmUtil:
+        alias: 'rapsys_pack.osm_util'
     #Register slugger util service
     rapsys_pack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
