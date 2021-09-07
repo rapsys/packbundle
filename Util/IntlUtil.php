@@ -16,6 +16,8 @@ use Twig\Environment;
 
 /**
  * Helps manage intl conversions
+ *
+ * @TODO Makes this class strict !!!
  */
 class IntlUtil {
 	/**
