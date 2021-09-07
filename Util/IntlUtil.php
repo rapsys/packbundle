@@ -30,19 +30,19 @@ class IntlUtil {
 		$date = twig_date_converter($env, $date, $timezone);
 
 		$formatValues = array(
-			'none' => IntlDateFormatter::NONE,
-			'short' => IntlDateFormatter::SHORT,
-			'medium' => IntlDateFormatter::MEDIUM,
-			'long' => IntlDateFormatter::LONG,
-			'full' => IntlDateFormatter::FULL,
+			'none' => \IntlDateFormatter::NONE,
+			'short' => \IntlDateFormatter::SHORT,
+			'medium' => \IntlDateFormatter::MEDIUM,
+			'long' => \IntlDateFormatter::LONG,
+			'full' => \IntlDateFormatter::FULL,
 		);
 
-		$formatter = IntlDateFormatter::create(
+		$formatter = \IntlDateFormatter::create(
 			$locale,
 			$formatValues[$dateFormat],
 			$formatValues[$timeFormat],
-			IntlTimeZone::createTimeZone($date->getTimezone()->getName()),
-			'gregorian' === $calendar ? IntlDateFormatter::GREGORIAN : IntlDateFormatter::TRADITIONAL,
+			\IntlTimeZone::createTimeZone($date->getTimezone()->getName()),
+			'gregorian' === $calendar ? \IntlDateFormatter::GREGORIAN : \IntlDateFormatter::TRADITIONAL,
 			$format
 		);
 
@@ -81,7 +81,7 @@ class IntlUtil {
 	 *
 	 * @return NumberFormatter A NumberFormatter instance
 	 */
-	protected function getNumberFormatter($locale, $style): NumberFormatter {
+	protected function getNumberFormatter($locale, $style): \NumberFormatter {
 		static $formatter, $currentStyle;
 
 		$locale = null !== $locale ? $locale : Locale::getDefault();
@@ -93,13 +93,13 @@ class IntlUtil {
 		}
 
 		static $styleValues = array(
-			'decimal' => NumberFormatter::DECIMAL,
-			'currency' => NumberFormatter::CURRENCY,
-			'percent' => NumberFormatter::PERCENT,
-			'scientific' => NumberFormatter::SCIENTIFIC,
-			'spellout' => NumberFormatter::SPELLOUT,
-			'ordinal' => NumberFormatter::ORDINAL,
-			'duration' => NumberFormatter::DURATION,
+			'decimal' => \NumberFormatter::DECIMAL,
+			'currency' => \NumberFormatter::CURRENCY,
+			'percent' => \NumberFormatter::PERCENT,
+			'scientific' => \NumberFormatter::SCIENTIFIC,
+			'spellout' => \NumberFormatter::SPELLOUT,
+			'ordinal' => \NumberFormatter::ORDINAL,
+			'duration' => \NumberFormatter::DURATION,
 		);
 
 		if (!isset($styleValues[$style])) {
@@ -108,7 +108,7 @@ class IntlUtil {
 
 		$currentStyle = $style;
 
-		$formatter = NumberFormatter::create($locale, $styleValues[$style]);
+		$formatter = \NumberFormatter::create($locale, $styleValues[$style]);
 
 		return $formatter;
 	}
