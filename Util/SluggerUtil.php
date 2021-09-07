@@ -31,7 +31,7 @@ class SluggerUtil {
 	private $offset;
 
 	/**
-	 * Creates a new slugger util
+	 * Construct slugger util
 	 *
 	 * @todo Add a command to generate alpha array or generate it on first run with cache storage ?
 	 * @todo Use Cache like in calendar controller through FilesystemAdapter
@@ -171,9 +171,15 @@ class SluggerUtil {
 	 * Convert string to safe slug
 	 *
 	 * @param string $data The data string
-	 * @return string The slugged data
+	 * @return ?string The slugged data
 	 */
-	function slug(string $data): string {
+	function slug(?string $data): ?string {
+		//With null
+		if ($data === null) {
+			//Return null
+			return $data;
+		}
+
 		//Use Transliterator if available
 		if (class_exists('Transliterator')) {
 			//Convert from any to latin, then to ascii and lowercase
@@ -181,6 +187,7 @@ class SluggerUtil {
 			//Replace every non alphanumeric character by dash then trim dash
 			return trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $trans->transliterate($data)), '-');
 		}
+
 		//Convert from utf-8 to ascii, replace quotes with space, remove non alphanumericseparator, replace separator with dash and trim dash
 		return trim(preg_replace('/[\/_|+ -]+/', '-', strtolower(preg_replace('/[^a-zA-Z0-9\/_|+ -]/', '', str_replace(['\'', '"'], ' ', iconv('UTF-8', 'ASCII//TRANSLIT', $data))))), '-');
 	}
