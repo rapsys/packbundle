@@ -112,7 +112,6 @@ class OsmUtil {
 
 		//With path file
 		if (
-			false &&
 			is_file($path) &&
 			($stat = stat($path)) &&
 			$stat['mtime'] >= $updated
