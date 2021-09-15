@@ -45,7 +45,7 @@ class RequestStackContext extends BaseRequestStackContext {
 	 */
 	public function getBaseUrl(): string {
 		//Without request
-		if (!$request = $this->requestStack->getMasterRequest()) {
+		if (!$request = $this->requestStack->getMainRequest()) {
 			//Return base path
 			return $this->basePath;
 		}
