@@ -77,12 +77,12 @@ class OsmUtil {
 	}
 
 	/**
-	 * Return the image
+	 * Return the simple image
 	 *
-	 * @desc Generate image in jpeg format or load it from cache
+	 * Generate simple image in jpeg format or load it from cache
 	 *
 	 * @param string $pathInfo The path info
-	 * @param string $alt The image alt
+	 * @param string $caption The image caption
 	 * @param int $updated The updated timestamp
 	 * @param float $latitude The latitude
 	 * @param float $longitude The longitude
@@ -91,9 +91,13 @@ class OsmUtil {
 	 * @param int $height The height
 	 * @return array The image array
 	 */
-	public function getImage(string $pathInfo, string $alt, int $updated, float $latitude, float $longitude, int $zoom = 18, int $width = 1280, int $height = 1280): array {
+	#TODO: rename to getSimple ???
+	public function getImage(string $pathInfo, string $caption, int $updated, float $latitude, float $longitude, int $zoom = 18, int $width = 1280, int $height = 1280): array {
 		//Set path file
 		$path = $this->path.$pathInfo.'.jpeg';
+
+		//Set min file
+		$min = $this->path.$pathInfo.'.min.jpeg';
 
 		//Without existing path
 		if (!is_dir($dir = dirname($path))) {
@@ -110,18 +114,15 @@ class OsmUtil {
 			}
 		}
 
-		//With path file
-		if (
-			is_file($path) &&
-			($stat = stat($path)) &&
-			$stat['mtime'] >= $updated
-		) {
+		//With path and min up to date file
+		if (is_file($path) && is_file($min) && ($mtime = stat($path)['mtime']) && ($mintime = stat($min)['mtime']) && $mtime >= $updated && $mintime >= $updated) {
 			//Return image data
 			return [
-				'src' => $this->url.'/'.$stat['mtime'].$pathInfo.'.jpeg',
-				'alt' => $alt,
-				'height' => $height,
-				'width' => $width
+				'link' => $this->url.'/'.$mtime.$pathInfo.'.jpeg',
+				'min' => $this->url.'/'.$mintime.$pathInfo.'.min.jpeg',
+				'caption' => $caption,
+				'height' => $height / 2,
+				'width' => $width / 2
 			];
 		}
 
@@ -212,18 +213,20 @@ class OsmUtil {
 		//Set text antialias
 		$draw->setTextAntialias(true);
 
+		//Set stroke antialias
+		$draw->setStrokeAntialias(true);
+
 		//Set fill color
-		$draw->setFillColor('#cff');
+		$draw->setFillColor('#c3c3f9');
 
 		//Set stroke color
-		$draw->setStrokeColor('#00c3f9');
+		$draw->setStrokeColor('#3333c3');
 
 		//Set stroke width
 		$draw->setStrokeWidth(2);
 
 		//Draw circle
-		$draw->circle($width/2 - 5, $height/2 - 5, $width/2 + 5, $height/2 + 5);
-		#$draw->circle($tileX/self::tz - 5, $tileY/self::tz - 5, $tileX/self::tz + 5, $tileY/self::tz + 5);
+		$draw->circle($width/2, $height/2 - 5, $width/2 + 10, $height/2 + 5);
 
 		//Draw on image
 		$image->drawImage($draw);
@@ -241,24 +244,351 @@ class OsmUtil {
 
 		//Add description
 		//XXX: not supported by imagick :'(
-		$image->setImageProperty('exif:Description', $alt);
+		$image->setImageProperty('exif:Description', $caption);
+
+		//Set progressive jpeg
+		$image->setInterlaceScheme(\Imagick::INTERLACE_PLANE);
 
 		//Save image
 		if (!$image->writeImage($path)) {
 			//Throw error
-			throw new \Exception(sprintf('Unable to write image "%s"', $dest));
+			throw new \Exception(sprintf('Unable to write image "%s"', $path));
 		}
 
-		//Get dest stat
-		$stat = stat($path);
+		//Crop using aspect ratio
+		$image->cropThumbnailImage($width / 2, $height / 2);
+
+		//Set compression quality
+		$image->setImageCompressionQuality(70);
+
+		//Save min image
+		if (!$image->writeImage($min)) {
+			//Throw error
+			throw new \Exception(sprintf('Unable to write image "%s"', $min));
+		}
 
 		//Return image data
 		return [
-			'src' => $this->url.'/'.$stat['mtime'].$pathInfo.'.jpeg',
-			'alt' => $alt,
-			'height' => $height,
-			'width' => $width
+			'link' => $this->url.'/'.stat($path)['mtime'].$pathInfo.'.jpeg',
+			'min' => $this->url.'/'.stat($min)['mtime'].$pathInfo.'.min.jpeg',
+			'caption' => $caption,
+			'height' => $height / 2,
+			'width' => $width / 2
 		];
+	}
+
+	/**
+	 * Return the multi image
+	 *
+	 * Generate multi image in jpeg format or load it from cache
+	 *
+	 * @param string $pathInfo The path info
+	 * @param string $caption The image caption
+	 * @param int $updated The updated timestamp
+	 * @param float $latitude The latitude
+	 * @param float $longitude The longitude
+	 * @param array $locations The latitude array
+	 * @param int $zoom The zoom
+	 * @param int $width The width
+	 * @param int $height The height
+	 * @return array The image array
+	 */
+	public function getMultiImage(string $pathInfo, string $caption, int $updated, float $latitude, float $longitude, array $locations, int $zoom = 18, int $width = 1280, int $height = 1280): array {
+		//Set path file
+		$path = $this->path.$pathInfo.'.jpeg';
+
+		//Set min file
+		$min = $this->path.$pathInfo.'.min.jpeg';
+
+		//Without existing path
+		if (!is_dir($dir = dirname($path))) {
+			//Create filesystem object
+			$filesystem = new Filesystem();
+
+			try {
+				//Create path
+				//XXX: set as 0775, symfony umask (0022) will reduce rights (0755)
+				$filesystem->mkdir($dir, 0775);
+			} catch (IOExceptionInterface $e) {
+				//Throw error
+				throw new \Exception(sprintf('Output path "%s" do not exists and unable to create it', $dir), 0, $e);
+			}
+		}
+
+		//With path and min up to date file
+		if (is_file($path) && is_file($min) && ($mtime = stat($path)['mtime']) && ($mintime = stat($min)['mtime']) && $mtime >= $updated && $mintime >= $updated) {
+			//Return image data
+			return [
+				'link' => $this->url.'/'.$mtime.$pathInfo.'.jpeg',
+				'min' => $this->url.'/'.$mintime.$pathInfo.'.min.jpeg',
+				'caption' => $caption,
+				'height' => $height / 2,
+				'width' => $width / 2
+			];
+		}
+
+		//Create image instance
+		$image = new \Imagick();
+
+		//Add new image
+		$image->newImage($width, $height, new \ImagickPixel('transparent'), 'jpeg');
+
+		//Create tile instance
+		$tile = new \Imagick();
+
+		//Init context
+		$ctx = stream_context_create(
+			[
+				'http' => [
+					#'header' => ['Referer: https://www.openstreetmap.org/'],
+					'max_redirects' => 5,
+					'timeout' => (int)ini_get('default_socket_timeout'),
+					#'user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
+					'user_agent' => (string)ini_get('user_agent')?:'rapsys_air/2.0.0',
+				]
+			]
+		);
+
+		//Get tile xy
+		$tileX = floor($centerX = $this->longitudeToX($longitude, $zoom));
+		$tileY = floor($centerY = $this->latitudeToY($latitude, $zoom));
+
+		//Calculate start xy
+		//XXX: we draw every tile starting beween -($width / 2) and 0
+		$startX = floor(($tileX * self::tz - $width) / self::tz);
+		//XXX: we draw every tile starting beween -($height / 2) and 0
+		$startY = floor(($tileY * self::tz - $height) / self::tz);
+
+		//Calculate end xy
+		//TODO: this seems stupid, check if we may just divide $width / 2 here !!!
+		//XXX: we draw every tile starting beween $width + ($width / 2)
+		$endX = ceil(($tileX * self::tz + $width) / self::tz);
+		//XXX: we draw every tile starting beween $width + ($width / 2)
+		$endY = ceil(($tileY * self::tz + $height) / self::tz);
+
+		for($x = $startX; $x <= $endX; $x++) {
+			for($y = $startY; $y <= $endY; $y++) {
+				//Set cache path
+				$cache = $this->cache.'/'.$zoom.'/'.$x.'/'.$y.'.png';
+
+				//Without cache path
+				if (!is_dir($dir = dirname($cache))) {
+					//Create filesystem object
+					$filesystem = new Filesystem();
+
+					try {
+						//Create path
+						//XXX: set as 0775, symfony umask (0022) will reduce rights (0755)
+						$filesystem->mkdir($dir, 0775);
+					} catch (IOExceptionInterface $e) {
+						//Throw error
+						throw new \Exception(sprintf('Output directory "%s" do not exists and unable to create it', $dir), 0, $e);
+					}
+				}
+
+				//Without cache image
+				if (!is_file($cache)) {
+					//Set tile url
+					$tileUri = str_replace(['{Z}', '{X}', '{Y}'], [$zoom, $x, $y], $this->servers[$this->server]);
+
+					//Store tile in cache
+					file_put_contents($cache, file_get_contents($tileUri, false, $ctx));
+				}
+
+				//Set dest x
+				$destX = intval(floor(($width / 2) - self::tz * ($centerX - $x)));
+
+				//Set dest y
+				$destY = intval(floor(($height / 2) - self::tz * ($centerY - $y)));
+
+				//Read tile from cache
+				$tile->readImage($cache);
+
+				//Compose image
+				$image->compositeImage($tile, \Imagick::COMPOSITE_OVER, $destX, $destY);
+
+				//Clear tile
+				$tile->clear();
+			}
+		}
+
+		//Add circle
+		//XXX: see https://www.php.net/manual/fr/imagick.examples-1.php#example-3916
+		$draw = new \ImagickDraw();
+
+		//Set text alignment
+		$draw->setTextAlignment(\Imagick::ALIGN_CENTER);
+
+		//Set text antialias
+		$draw->setTextAntialias(true);
+
+		//Set stroke antialias
+		$draw->setStrokeAntialias(true);
+
+		//Iterate on locations
+		foreach($locations as $k => $location) {
+			//Set dest x
+			$destX = intval(floor(($width / 2) - self::tz * ($centerX - $this->longitudeToX($location['longitude'], $zoom))));
+
+			//Set dest y
+			$destY = intval(floor(($height / 2) - self::tz * ($centerY - $this->latitudeToY($location['latitude'], $zoom))));
+
+			//Set fill color
+			$draw->setFillColor('#cff');
+
+			//Set font size
+			$draw->setFontSize(20);
+
+			//Set stroke color
+			$draw->setStrokeColor('#00c3f9');
+
+			//Set circle radius
+			$radius = 5;
+
+			//Set stroke
+			$stroke = 2;
+
+			//With matching position
+			if ($location['latitude'] === $latitude && $location['longitude'] == $longitude) {
+				//Set fill color
+				$draw->setFillColor('#c3c3f9');
+
+				//Set font size
+				$draw->setFontSize(30);
+
+				//Set stroke color
+				$draw->setStrokeColor('#3333c3');
+
+				//Set circle radius
+				$radius = 8;
+
+				//Set stroke
+				$stroke = 4;
+			}
+
+			//Set stroke width
+			$draw->setStrokeWidth($stroke);
+
+			//Draw circle
+			$draw->circle($destX, $destY - $radius, $destX + $radius * 2, $destY + $radius);
+
+			//Set fill color
+			$draw->setFillColor($draw->getStrokeColor());
+
+			//Set stroke width
+			$draw->setStrokeWidth($stroke / 4);
+
+			//Get font metrics
+			$metrics = $image->queryFontMetrics($draw, strval($location['id']));
+
+			//Add annotation
+			$draw->annotation($destX, $destY - $metrics['descender'] / 3, strval($location['id']));
+		}
+
+		//Draw on image
+		$image->drawImage($draw);
+
+		//Strip image exif data and properties
+		$image->stripImage();
+
+		//Add latitude
+		//XXX: not supported by imagick :'(
+		$image->setImageProperty('exif:GPSLatitude', $this->latitudeToSexagesimal($latitude));
+
+		//Add longitude
+		//XXX: not supported by imagick :'(
+		$image->setImageProperty('exif:GPSLongitude', $this->longitudeToSexagesimal($longitude));
+
+		//Add description
+		//XXX: not supported by imagick :'(
+		$image->setImageProperty('exif:Description', $caption);
+
+		//Set progressive jpeg
+		$image->setInterlaceScheme(\Imagick::INTERLACE_PLANE);
+
+		//Save image
+		if (!$image->writeImage($path)) {
+			//Throw error
+			throw new \Exception(sprintf('Unable to write image "%s"', $path));
+		}
+
+		//Crop using aspect ratio
+		$image->cropThumbnailImage($width / 2, $height / 2);
+
+		//Set compression quality
+		$image->setImageCompressionQuality(70);
+
+		//Save min image
+		if (!$image->writeImage($min)) {
+			//Throw error
+			throw new \Exception(sprintf('Unable to write image "%s"', $min));
+		}
+
+		//Return image data
+		return [
+			'link' => $this->url.'/'.stat($path)['mtime'].$pathInfo.'.jpeg',
+			'min' => $this->url.'/'.stat($min)['mtime'].$pathInfo.'.min.jpeg',
+			'caption' => $caption,
+			'height' => $height / 2,
+			'width' => $width / 2
+		];
+	}
+
+	/**
+	 * Return multi zoom
+	 *
+	 * Compute multi image optimal zoom
+	 *
+	 * @param float $latitude The latitude
+	 * @param float $longitude The longitude
+	 * @param array $locations The latitude array
+	 * @param int $zoom The zoom
+	 * @param int $width The width
+	 * @param int $height The height
+	 * @return int The zoom
+	 */
+	public function getMultiZoom(float $latitude, float $longitude, array $locations, int $zoom = 18, int $width = 1280, int $height = 1280): int {
+		//Iterate on each zoom
+		for ($i = $zoom; $i >= 1; $i--) {
+			//Get tile xy
+			$tileX = floor($this->longitudeToX($longitude, $i));
+			$tileY = floor($this->latitudeToY($latitude, $i));
+
+			//Calculate start xy
+			$startX = floor(($tileX * self::tz - $width / 2) / self::tz);
+			$startY = floor(($tileY * self::tz - $height / 2) / self::tz);
+
+			//Calculate end xy
+			$endX = ceil(($tileX * self::tz + $width / 2) / self::tz);
+			$endY = ceil(($tileY * self::tz + $height / 2) / self::tz);
+
+			//Iterate on each locations
+			foreach($locations as $k => $location) {
+				//Set dest x
+				$destX = floor($this->longitudeToX($location['longitude'], $i));
+
+				//With outside point
+				if ($startX >= $destX || $endX <= $destX) {
+					//Skip zoom
+					continue(2);
+				}
+
+				//Set dest y
+				$destY = floor($this->latitudeToY($location['latitude'], $i));
+
+				//With outside point
+				if ($startY >= $destY || $endY <= $destY) {
+					//Skip zoom
+					continue(2);
+				}
+			}
+
+			//Found zoom
+			break;
+		}
+
+		//Return zoom
+		return $i;
 	}
 
 	/**
