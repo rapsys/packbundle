@@ -107,78 +107,78 @@ content available in `Resources/config/packages/rapsys_pack.yaml`:
 ```yaml
 #Services configuration
 services:
-	#Replace assets.packages definition
-	assets.packages:
-		class: 'Symfony\Component\Asset\Packages'
-		arguments: [ '@rapsys_pack.path_package' ]
-	#Replace assets.context definition
-	assets.context:
-		class: 'Rapsys\PackBundle\Context\RequestStackContext'
-		arguments: [ '@request_stack', '%asset.request_context.base_path%', '%asset.request_context.secure%' ]
-	#Register assets pack package
-	rapsys_pack.path_package:
-		class: 'Rapsys\PackBundle\Package\PathPackage'
-		arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
-		public: true
-	#Register twig pack extension
-	rapsys_pack.pack_extension:
-		class: 'Rapsys\PackBundle\Extension\PackExtension'
-		arguments: [ '@service_container', '@rapsys_pack.intl_util', '@file_locator', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
-		tags: [ 'twig.extension' ]
-	#Register intl util service
-	rapsys_pack.intl_util:
-		class: 'Rapsys\PackBundle\Util\IntlUtil'
-		public: true
-	#Register facebook event subscriber
-	Rapsys\PackBundle\Subscriber\FacebookSubscriber:
-		arguments: [ '@router', '%rapsys_air.locales%' ]
-		tags: [ 'kernel.event_subscriber' ]
-	#Register intl util class alias
-	Rapsys\PackBundle\Util\IntlUtil:
-		alias: 'rapsys_pack.intl_util'
-	#Register facebook util service
-	rapsys_pack.facebook_util:
-		class: 'Rapsys\PackBundle\Util\FacebookUtil'
-		arguments: [ '@router', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
-		public: true
-	#Register facebook util class alias
-	Rapsys\PackBundle\Util\FacebookUtil:
-		alias: 'rapsys_pack.facebook_util'
-	#Register image util service
-	rapsys_pack.image_util:
-		class: 'Rapsys\PackBundle\Util\ImageUtil'
-		arguments: [ '@router', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
-		public: true
-	#Register image util class alias
-	Rapsys\PackBundle\Util\ImageUtil:
-		alias: 'rapsys_pack.image_util'
-	#Register map util service
-	rapsys_pack.map_util:
-		class: 'Rapsys\PackBundle\Util\MapUtil'
-		arguments: [ '@router', '@rapsys_pack.slugger_util' ]
-		public: true
-	#Register map util class alias
-	Rapsys\PackBundle\Util\MapUtil:
-		alias: 'rapsys_pack.map_util'
-	#Register slugger util service
-	rapsys_pack.slugger_util:
-		class: 'Rapsys\PackBundle\Util\SluggerUtil'
-		arguments: [ '%kernel.secret%' ]
-		public: true
-	#Register slugger util class alias
-	Rapsys\PackBundle\Util\SluggerUtil:
-		alias: 'rapsys_pack.slugger_util'
-	#Register image controller
-	Rapsys\PackBundle\Controller\ImageController:
-		arguments: [ '@service_container', '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
-		tags: [ 'controller.service_arguments' ]
-	#Register map controller
-	Rapsys\PackBundle\Controller\MapController:
-		arguments: [ '@service_container', '@rapsys_pack.map_util', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
-		tags: [ 'controller.service_arguments' ]
-	Rapsys\PackBundle\Form\CaptchaType:
-		arguments: [ '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '@translator' ]
-		tags: [ 'form.type' ]
+    #Replace assets.packages definition
+    assets.packages:
+        class: 'Symfony\Component\Asset\Packages'
+        arguments: [ '@rapsys_pack.path_package' ]
+    #Replace assets.context definition
+    assets.context:
+        class: 'Rapsys\PackBundle\Context\RequestStackContext'
+        arguments: [ '@request_stack', '%asset.request_context.base_path%', '%asset.request_context.secure%' ]
+    #Register assets pack package
+    rapsys_pack.path_package:
+        class: 'Rapsys\PackBundle\Package\PathPackage'
+        arguments: [ '/', '@assets.empty_version_strategy', '@assets.context' ]
+        public: true
+    #Register twig pack extension
+    rapsys_pack.pack_extension:
+        class: 'Rapsys\PackBundle\Extension\PackExtension'
+        arguments: [ '@service_container', '@rapsys_pack.intl_util', '@file_locator', '@rapsys_pack.path_package', '@rapsys_pack.slugger_util' ]
+        tags: [ 'twig.extension' ]
+    #Register intl util service
+    rapsys_pack.intl_util:
+        class: 'Rapsys\PackBundle\Util\IntlUtil'
+        public: true
+    #Register facebook event subscriber
+    Rapsys\PackBundle\Subscriber\FacebookSubscriber:
+        arguments: [ '@router', '%rapsys_air.locales%' ]
+        tags: [ 'kernel.event_subscriber' ]
+    #Register intl util class alias
+    Rapsys\PackBundle\Util\IntlUtil:
+        alias: 'rapsys_pack.intl_util'
+    #Register facebook util service
+    rapsys_pack.facebook_util:
+        class: 'Rapsys\PackBundle\Util\FacebookUtil'
+        arguments: [ '@router', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
+        public: true
+    #Register facebook util class alias
+    Rapsys\PackBundle\Util\FacebookUtil:
+        alias: 'rapsys_pack.facebook_util'
+    #Register image util service
+    rapsys_pack.image_util:
+        class: 'Rapsys\PackBundle\Util\ImageUtil'
+        arguments: [ '@router', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
+        public: true
+    #Register image util class alias
+    Rapsys\PackBundle\Util\ImageUtil:
+        alias: 'rapsys_pack.image_util'
+    #Register map util service
+    rapsys_pack.map_util:
+        class: 'Rapsys\PackBundle\Util\MapUtil'
+        arguments: [ '@router', '@rapsys_pack.slugger_util' ]
+        public: true
+    #Register map util class alias
+    Rapsys\PackBundle\Util\MapUtil:
+        alias: 'rapsys_pack.map_util'
+    #Register slugger util service
+    rapsys_pack.slugger_util:
+        class: 'Rapsys\PackBundle\Util\SluggerUtil'
+        arguments: [ '%kernel.secret%' ]
+        public: true
+    #Register slugger util class alias
+    Rapsys\PackBundle\Util\SluggerUtil:
+        alias: 'rapsys_pack.slugger_util'
+    #Register image controller
+    Rapsys\PackBundle\Controller\ImageController:
+        arguments: [ '@service_container', '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
+        tags: [ 'controller.service_arguments' ]
+    #Register map controller
+    Rapsys\PackBundle\Controller\MapController:
+        arguments: [ '@service_container', '@rapsys_pack.map_util', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
+        tags: [ 'controller.service_arguments' ]
+    Rapsys\PackBundle\Form\CaptchaType:
+        arguments: [ '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '@translator' ]
+        tags: [ 'form.type' ]
 ```
 
 Open a command console, enter your project directory and execute the following
