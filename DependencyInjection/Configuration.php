@@ -45,6 +45,8 @@ class Configuration implements ConfigurationInterface {
 				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.2.0',
 				'redirect' => 5
 			],
+			#TODO: migrate to public.path, public.url and router->generateUrl ?
+			#XXX: that would means dropping the PathPackage stuff and use static route like rapsys_pack_facebook
 			'output' => [
 				'css' => '@RapsysPack/css/*.pack.css',
 				'js' =>  '@RapsysPack/js/*.pack.js',
