@@ -118,10 +118,16 @@ class SluggerUtil {
 	/**
 	 * Crypt and base64uri encode string
 	 *
-	 * @param string $data The data string
+	 * @param array|string $data The data string
 	 * @return string The hashed data
 	 */
-	public function hash(string $data): string {
+	public function hash(array|string $data): string {
+		//With array
+		if (is_array($data)) {
+			//Json encode array
+			$data = json_encode($data);
+		}
+
 		//Return hashed data
 		//XXX: we use hash_hmac with md5 hash
 		//XXX: crypt was dropped because it provided identical signature for string starting with same pattern
