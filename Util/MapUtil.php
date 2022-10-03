@@ -60,9 +60,14 @@ class MapUtil {
 	const highStrokeWidth = 4;
 
 	/**
-	 * The map length
+	 * The map width
 	 */
-	const length = 640;
+	const width = 640;
+
+	/**
+	 * The map height
+	 */
+	const height = 640;
 	
 	/**
 	 * The osm tile server
@@ -208,7 +213,7 @@ class MapUtil {
 	}
 
 	/**
-	 * Return map url
+	 * Get map data
 	 *
 	 * @param string $caption The caption
 	 * @param int $updated The updated timestamp
@@ -217,14 +222,14 @@ class MapUtil {
 	 * @param int $zoom The zoom
 	 * @param int $width The width
 	 * @param int $height The height
-	 * @return int The zoom
+	 * @return array The map data
 	 */
-	public function mapUrl(string $caption, int $updated, float $latitude, float $longitude, int $zoom = self::zoom, int $width = self::length, int $height = self::length): array {
+	public function getMap(string $caption, int $updated, float $latitude, float $longitude, int $zoom = self::zoom, int $width = self::width, int $height = self::height): array {
 		//Set link hash
-		$link = $this->slugger->serialize([$updated, $latitude, $longitude, $zoom + 1, $width * 2, $height * 2]);
+		$link = $this->slugger->hash([$updated, $latitude, $longitude, $zoom + 1, $width * 2, $height * 2]);
 
 		//Set src hash
-		$src = $this->slugger->serialize([$updated, $latitude, $longitude, $zoom, $width, $height]);
+		$src = $this->slugger->hash([$updated, $latitude, $longitude, $zoom, $width, $height]);
 
 		//Return array
 		return [
@@ -237,7 +242,7 @@ class MapUtil {
 	}
 
 	/**
-	 * Return multi map url
+	 * Get multi map data
 	 *
 	 * @param string $caption The caption
 	 * @param int $updated The updated timestamp
@@ -247,9 +252,9 @@ class MapUtil {
 	 * @param int $zoom The zoom
 	 * @param int $width The width
 	 * @param int $height The height
-	 * @return int The zoom
+	 * @return array The multi map data
 	 */
-	public function multiMapUrl(string $caption, int $updated, float $latitude, float $longitude, $coordinates = [], int $zoom = self::zoom, int $width = self::length, int $height = self::length): array {
+	public function getMultiMap(string $caption, int $updated, float $latitude, float $longitude, $coordinates = [], int $zoom = self::zoom, int $width = self::width, int $height = self::height): array {
 		//Set coordinate
 		$coordinate = implode('-', array_map(function ($v) { return $v['latitude'].','.$v['longitude']; }, $coordinates));
 
@@ -257,10 +262,10 @@ class MapUtil {
 		$hash = $this->slugger->hash($coordinate);
 
 		//Set link hash
-		$link = $this->slugger->serialize([$updated, $latitude, $longitude, $hash, $zoom + 1, $width * 2, $height * 2]);
+		$link = $this->slugger->hash([$updated, $latitude, $longitude, $hash, $zoom + 1, $width * 2, $height * 2]);
 
 		//Set src hash
-		$src = $this->slugger->serialize([$updated, $latitude, $longitude, $hash, $zoom, $width, $height]);
+		$src = $this->slugger->hash([$updated, $latitude, $longitude, $hash, $zoom, $width, $height]);
 
 		//Return array
 		return [
@@ -273,7 +278,7 @@ class MapUtil {
 	}
 
 	/**
-	 * Return multi map zoom
+	 * Get multi zoom
 	 *
 	 * Compute a zoom to have all coordinates on multi map
 	 * Multi map visible only from -($width / 2) until ($width / 2) and from -($height / 2) until ($height / 2)
@@ -288,7 +293,7 @@ class MapUtil {
 	 * @param int $height The height
 	 * @return int The zoom
 	 */
-	public function multiMapZoom(float $latitude, float $longitude, array $coordinates = [], int $zoom = self::zoom, int $width = self::length, int $height = self::length): int {
+	public function getMultiZoom(float $latitude, float $longitude, array $coordinates = [], int $zoom = self::zoom, int $width = self::width, int $height = self::height): int {
 		//Iterate on each zoom
 		for ($i = $zoom; $i >= 1; $i--) {
 			//Get tile xy
