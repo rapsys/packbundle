@@ -11,9 +11,10 @@
 
 namespace Rapsys\PackBundle\Util;
 
-use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Helps manage facebook images
@@ -41,25 +42,16 @@ class FacebookUtil {
 	protected $path;
 
 	/**
-	 * The public url
-	 *
-	 * @var string
-	 */
-	protected $url;
-
-	/**
-	 * The package instance
-	 *
-	 * @var PackageInterface
-	 */
-	protected $package;
-
-	/**
 	 * The prefix
 	 *
 	 * @var string
 	 */
 	protected $prefix;
+
+	/**
+	 * The RouterInterface instance
+	 */
+	protected RouterInterface $router;
 
 	/**
 	 * The source
@@ -69,15 +61,14 @@ class FacebookUtil {
 	protected $source;
 
 	/**
-	 * Creates a new osm util
+	 * Creates a new facebook util
 	 *
-	 * @param PackageInterface $package The package instance
+	 * @param RouterInterface $router The RouterInterface instance
 	 * @param string $cache The cache directory
 	 * @param string $path The public path
-	 * @param string $url The public url
 	 * @param string $prefix The prefix
 	 */
-	function __construct(PackageInterface $package, string $cache, string $path, string $url, string $prefix = 'facebook', string $source = 'png/facebook.png', array $fonts = [ 'default' => 'ttf/default.ttf' ]) {
+	function __construct(RouterInterface $router, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'facebook', string $source = 'png/facebook.png', array $fonts = [ 'default' => 'ttf/default.ttf' ]) {
 		//Set cache
 		$this->cache = $cache.'/'.$prefix;
 
@@ -87,11 +78,8 @@ class FacebookUtil {
 		//Set path
 		$this->path = $path.'/'.$prefix;
 
-		//Set url
-		$this->url = $url.'/'.$prefix;
-
-		//Set package instance
-		$this->package = $package;
+		//Set router
+		$this->router = $router;
 
 		//Set prefix key
 		$this->prefix = $prefix;
@@ -138,8 +126,7 @@ class FacebookUtil {
 
 			//Return image data
 			return [
-				#'og:image' => $this->package->getAbsoluteUrl('@RapsysAir/facebook/'.$mtime.$pathInfo.'.jpeg'),
-				'og:image' => $this->package->getAbsoluteUrl($this->url.'/'.$mtime.$pathInfo.'.jpeg'),
+				'og:image' => $this->router->generate('rapsys_pack_facebook', ['mtime' => $mtime, 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
 				'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 				'og:image:height' => $height,
 				'og:image:width' => $width
@@ -379,7 +366,7 @@ class FacebookUtil {
 
 		//Return image data
 		return [
-			'og:image' => $this->package->getAbsoluteUrl($this->url.'/'.stat($path)['mtime'].$pathInfo.'.jpeg'),
+			'og:image' => $this->router->generate('rapsys_pack_facebook', ['mtime' => stat($path)['mtime'], 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
 			'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 			'og:image:height' => $height,
 			'og:image:width' => $width
