@@ -50,7 +50,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 	/**
 	 * The public path
 	 */
-	protected string $public;
+	protected string $path;
 
 	/**
 	 * The SluggerUtil instance
@@ -64,11 +64,12 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 	 * @param ImageUtil $image The MapUtil instance
 	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 * @param string $cache The cache path
-	 * @param string $public The public path
+	 * @param string $path The public path
+	 * @param string $prefix The prefix
 	 */
-	function __construct(ContainerInterface $container, ImageUtil $image, SluggerUtil $slugger, string $cache = '../var/cache/image', string $public = './bundles/rapsyspack/image') {
+	function __construct(ContainerInterface $container, ImageUtil $image, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image') {
 		//Set cache
-		$this->cache = $cache;
+		$this->cache = $cache.'/'.$prefix;
 
 		//Set container
 		$this->container = $container;
@@ -76,8 +77,8 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 		//Set image
 		$this->image = $image;
 
-		//Set public
-		$this->public = $public;
+		//Set path
+		$this->path = $path.'/'.$prefix;
 
 		//Set slugger
 		$this->slugger = $slugger;
@@ -105,7 +106,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 		$hashed = array_reverse(str_split(strval($updated)));
 
 		//Set captcha
-		$captcha = $this->public.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$equation.'/'.$width.'x'.$height.'.jpeg';
+		$captcha = $this->path.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$equation.'/'.$width.'x'.$height.'.jpeg';
 
 		//Unshort equation
 		$equation = $this->slugger->unshort($equation);
@@ -256,7 +257,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 		$hashed = array_reverse(str_split(strval($updated)));
 
 		//Set thumb
-		$thumb = $this->public.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$path.'/'.$width.'x'.$height.'.jpeg';
+		$thumb = $this->path.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$path.'/'.$width.'x'.$height.'.jpeg';
 
 		//Unshort path
 		$path = $this->slugger->unshort($path);

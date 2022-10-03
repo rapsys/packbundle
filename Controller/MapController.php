@@ -55,7 +55,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 	/**
 	 * The public path
 	 */
-	protected string $public;
+	protected string $path;
 
 	/**
 	 * The SluggerUtil instance
@@ -74,12 +74,13 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 	 * @param MapUtil $map The MapUtil instance
 	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 * @param string $cache The cache path
-	 * @param string $public The public path
+	 * @param string $path The public path
+#	 * @param string $prefix The prefix
 	 * @param string $url The tile server url
 	 */
-	function __construct(ContainerInterface $container, MapUtil $map, SluggerUtil $slugger, string $cache = '../var/cache/map', string $public = './bundles/rapsyspack/map', string $url = MapUtil::osm) {
+	function __construct(ContainerInterface $container, MapUtil $map, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'map', string $url = MapUtil::osm) {
 		//Set cache
-		$this->cache = $cache;
+		$this->cache = $cache.'/'.$prefix;
 
 		//Set container
 		$this->container = $container;
@@ -100,8 +101,8 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		//Set map
 		$this->map = $map;
 
-		//Set public
-		$this->public = $public;
+		//Set path
+		$this->path = $path.'/'.$prefix;
 
 		//Set slugger
 		$this->slugger = $slugger;
@@ -131,7 +132,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		}
 
 		//Set map
-		$map = $this->public.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$width.'x'.$height.'.jpeg';
+		$map = $this->path.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$width.'x'.$height.'.jpeg';
 
 		//Without multi up to date file
 		if (!is_file($map) || !($mtime = stat($map)['mtime']) || $mtime < $updated) {
@@ -325,7 +326,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		}
 
 		//Set multi
-		$map = $this->public.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$coordinate.'/'.$width.'x'.$height.'.jpeg';
+		$map = $this->path.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$coordinate.'/'.$width.'x'.$height.'.jpeg';
 
 		//Without multi up to date file
 		if (!is_file($map) || !($mtime = stat($map)['mtime']) || $mtime < $updated) {
