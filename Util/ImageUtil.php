@@ -70,9 +70,9 @@ class ImageUtil {
 	protected string $cache;
 
 	/**
-	 * The public path
+	 * The path
 	 */
-	protected string $public;
+	protected string $path;
 
 	/**
 	 * The RouterInterface instance
@@ -85,14 +85,17 @@ class ImageUtil {
 	protected SluggerUtil $slugger;
 
 	/**
-	 * Creates a new map util
+	 * Creates a new image util
 	 *
 	 * @param RouterInterface $router The RouterInterface instance
 	 * @param SluggerUtil $slugger The SluggerUtil instance
+	 * @param string $cache The cache directory
+	 * @param string $path The public path
+	 * @param string $prefix The prefix
 	 */
-	function __construct(RouterInterface $router, SluggerUtil $slugger, string $cache = '../var/cache/image', string $public = './bundles/rapsyspack/image', $captchaBackground = self::captchaBackground, $captchaFill = self::captchaFill, $captchaFontSize = self::captchaFontSize, $captchaStroke = self::captchaStroke, $captchaStrokeWidth = self::captchaStrokeWidth) {
+	function __construct(RouterInterface $router, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image', $captchaBackground = self::captchaBackground, $captchaFill = self::captchaFill, $captchaFontSize = self::captchaFontSize, $captchaStroke = self::captchaStroke, $captchaStrokeWidth = self::captchaStrokeWidth) {
 		//Set cache
-		$this->cache = $cache;
+		$this->cache = $cache.'/'.$prefix;
 
 		//set captcha background
 		$this->captchaBackground = $captchaBackground;
@@ -109,8 +112,8 @@ class ImageUtil {
 		//set captcha stroke width
 		$this->captchaStrokeWidth = $captchaStrokeWidth;
 
-		//Set public
-		$this->public = $public;
+		//Set path
+		$this->path = $path.'/'.$prefix;
 
 		//Set router
 		$this->router = $router;
@@ -202,7 +205,7 @@ class ImageUtil {
 		$hash = array_reverse(str_split(strval($updated)));
 
 		//Set dir
-		$dir = $this->public.'/'.$hash[0].'/'.$hash[1].'/'.$hash[2].'/'.$updated.'/'.$this->slugger->short($path);
+		$dir = $this->path.'/'.$hash[0].'/'.$hash[1].'/'.$hash[2].'/'.$updated.'/'.$this->slugger->short($path);
 
 		//Set removes
 		$removes = [];
