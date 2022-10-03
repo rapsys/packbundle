@@ -42,7 +42,7 @@ class Configuration implements ConfigurationInterface {
 				'name' => 'asset_url',
 				'scheme' => 'https://',
 				'timeout' => (int)ini_get('default_socket_timeout'),
-				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.2.0',
+				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.2.1',
 				'redirect' => 5
 			],
 			#TODO: migrate to public.path, public.url and router->generateUrl ?
@@ -78,10 +78,7 @@ class Configuration implements ConfigurationInterface {
 					]
 				],
 			],
-			'public' => [
-				'path' => dirname(__DIR__).'/Resources/public',
-				'url' => '/bundles/'.str_replace('_', '', $alias)
-			]
+			'path' => dirname(__DIR__).'/Resources/public',
 		];
 
 		/**
@@ -189,13 +186,7 @@ class Configuration implements ConfigurationInterface {
 							->end()
 						->end()
 					->end()
-					->arrayNode('public')
-						->addDefaultsIfNotSet()
-						->children()
-							->scalarNode('path')->cannotBeEmpty()->defaultValue($defaults['public']['path'])->end()
-							->scalarNode('url')->cannotBeEmpty()->defaultValue($defaults['public']['url'])->end()
-						->end()
-					->end()
+					->scalarNode('path')->cannotBeEmpty()->defaultValue($defaults['path'])->end()
 				->end()
 			->end();
 
