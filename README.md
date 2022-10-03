@@ -258,7 +258,7 @@ use Twig\Error\Error;
 
 //This class will be defined in the parameter rapsys_pack.filters.(css|img|js).[x].class string
 class MyPackFilter implements FilterInterface {
-	//The constructor arguments ... will be replaced defined in the parameter rapsys_pack.filters.(css|img|js).[x].args array
+	//The constructor arguments ... will be replaced with values defined in the parameter rapsys_pack.filters.(css|img|js).[x].args array
 	public function __construct(string $fileName, int $line, string $bin = 'mypack', ...) {
 		//Set fileName
 		$this->fileName = $fileName;
