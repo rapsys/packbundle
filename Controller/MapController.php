@@ -294,6 +294,9 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		//Set last modified
 		$response->setLastModified(\DateTime::createFromFormat('U', strval($mtime)));
 
+		//Disable robot index
+		$response->headers->set('X-Robots-Tag', 'noindex');
+
 		//Set as public
 		$response->setPublic();
 
@@ -538,6 +541,9 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 
 		//Set last modified
 		$response->setLastModified(\DateTime::createFromFormat('U', strval($mtime)));
+
+		//Disable robot index
+		$response->headers->set('X-Robots-Tag', 'noindex');
 
 		//Set as public
 		$response->setPublic();
