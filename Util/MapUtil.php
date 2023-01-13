@@ -246,15 +246,27 @@ class MapUtil {
 	 *
 	 * @param string $caption The caption
 	 * @param int $updated The updated timestamp
-	 * @param float $latitude The latitude
-	 * @param float $longitude The longitude
 	 * @param array $coordinates The coordinates array
-	 * @param int $zoom The zoom
 	 * @param int $width The width
 	 * @param int $height The height
 	 * @return array The multi map data
 	 */
-	public function getMultiMap(string $caption, int $updated, float $latitude, float $longitude, $coordinates = [], int $zoom = self::zoom, int $width = self::width, int $height = self::height): array {
+	public function getMultiMap(string $caption, int $updated, array $coordinates, int $width = self::width, int $height = self::height): array {
+		//Set latitudes
+		$latitudes = array_map(function ($v) { return $v['latitude']; }, $coordinates);
+
+		//Set longitudes
+		$longitudes = array_map(function ($v) { return $v['longitude']; }, $coordinates);
+
+		//Set latitude
+		$latitude = round((min($latitudes)+max($latitudes))/2, 6);
+
+		//Set longitude
+		$longitude = round((min($longitudes)+max($longitudes))/2, 6);
+
+		//Set zoom
+		$zoom = $this->getMultiZoom($latitude, $longitude, $coordinates, $width, $height);
+
 		//Set coordinate
 		$coordinate = implode('-', array_map(function ($v) { return $v['latitude'].','.$v['longitude']; }, $coordinates));
 
@@ -288,12 +300,12 @@ class MapUtil {
 	 * @param float $latitude The latitude
 	 * @param float $longitude The longitude
 	 * @param array $coordinates The coordinates array
-	 * @param int $zoom The zoom
 	 * @param int $width The width
 	 * @param int $height The height
+	 * @param int $zoom The zoom
 	 * @return int The zoom
 	 */
-	public function getMultiZoom(float $latitude, float $longitude, array $coordinates = [], int $zoom = self::zoom, int $width = self::width, int $height = self::height): int {
+	public function getMultiZoom(float $latitude, float $longitude, array $coordinates, int $width, int $height, int $zoom = self::zoom): int {
 		//Iterate on each zoom
 		for ($i = $zoom; $i >= 1; $i--) {
 			//Get tile xy
