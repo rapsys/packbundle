@@ -199,6 +199,31 @@ class SluggerUtil {
 	}
 
 	/**
+	 * Convert string to latin
+	 *
+	 * @param string $data The data string
+	 * @return ?string The slugged data
+	 */
+	function latin(?string $data): ?string {
+		//With null
+		if ($data === null) {
+			//Return null
+			return $data;
+		}
+
+		//Use Transliterator if available
+		if (class_exists('Transliterator')) {
+			//Convert from any to latin, then to ascii and lowercase
+			$trans = \Transliterator::create('Any-Latin; Latin-ASCII');
+			//Replace every non alphanumeric character by dash then trim dash
+			return trim($trans->transliterate($data));
+		}
+
+		//Convert from utf-8 to ascii
+		return trim(iconv('UTF-8', 'ASCII//TRANSLIT', $data));
+	}
+
+	/**
 	 * Unshort then unserialize
 	 *
 	 * @param string $data The data string
