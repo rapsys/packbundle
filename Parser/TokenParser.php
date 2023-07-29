@@ -26,8 +26,35 @@ use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
 class TokenParser extends AbstractTokenParser {
+	///The locator
+	protected $locator;
+
+	///The package
+	protected $package;
+
+	///The name
+	protected $name;
+
+	///The scheme
+	protected $scheme;
+
+	///The timeout
+	protected $timeout;
+
+	///The agent
+	protected $agent;
+
+	///The redirect
+	protected $redirect;
+
 	///The tag name
 	protected $tag;
+
+	///The output
+	protected $output;
+
+	///The filters
+	protected $filters;
 
 	/**
 	 * Constructor
