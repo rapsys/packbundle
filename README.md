@@ -38,11 +38,11 @@ Add bundle custom repository to your project's `composer.json` file:
 					}
 				},
 				"require": {
-					"symfony/asset": "^4.0|^5.0",
-					"symfony/flex": "^1.0",
-					"symfony/framework-bundle": "^4.0|^5.0",
-					"symfony/process": "^4.0|^5.0",
-					"symfony/twig-bundle": "^4.0|^5.0"
+					"symfony/asset": "^4.0|^5.0|^6.0|^7.0",
+					"symfony/flex": "^1.0|^2.0",
+					"symfony/framework-bundle": "^4.0|^5.0|^6.0|^7.0",
+					"symfony/process": "^4.0|^5.0|^6.0|^7.0",
+					"symfony/twig-bundle": "^4.0|^5.0|^6.0|^7.0"
 				}
 			}
 		}
@@ -131,7 +131,7 @@ services:
         public: true
     #Register facebook event subscriber
     Rapsys\PackBundle\Subscriber\FacebookSubscriber:
-        arguments: [ '@router', '%rapsys_air.locales%' ]
+        arguments: [ '@router', [] ]
         tags: [ 'kernel.event_subscriber' ]
     #Register intl util class alias
     Rapsys\PackBundle\Util\IntlUtil:
@@ -179,6 +179,23 @@ services:
     Rapsys\PackBundle\Form\CaptchaType:
         arguments: [ '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '@translator' ]
         tags: [ 'form.type' ]
+```
+
+Setup configuration file `config/packages/myproject.yaml` with the following
+content available in `Resources/config/packages/rapsys_pack.yaml`:
+
+```yaml
+#Services configuration
+services:
+    #Register facebook event subscriber
+    Rapsys\PackBundle\Subscriber\FacebookSubscriber:
+        arguments: [ '@router', [ 'en', 'en_gb', 'en_us', 'fr', 'fr_fr' ] ]
+        tags: [ 'kernel.event_subscriber' ]
+    #Register facebook util service
+    rapsys_blog.facebook_util:
+        class: 'Rapsys\PackBundle\Util\FacebookUtil'
+        arguments: [ '@router',  '%kernel.project_dir%/var/cache', '%rapsys_pack.path%', 'facebook', '%kernel.project_dir%/public/png/facebook.png' ]
+        public: true
 ```
 
 Open a command console, enter your project directory and execute the following
