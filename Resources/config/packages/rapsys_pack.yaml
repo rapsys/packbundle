@@ -24,7 +24,7 @@ services:
         public: true
     #Register facebook event subscriber
     Rapsys\PackBundle\Subscriber\FacebookSubscriber:
-        arguments: [ '@router', '%rapsys_air.locales%' ]
+        arguments: [ '@router', [] ]
         tags: [ 'kernel.event_subscriber' ]
     #Register intl util class alias
     Rapsys\PackBundle\Util\IntlUtil:
