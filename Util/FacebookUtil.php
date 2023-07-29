@@ -21,32 +21,53 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class FacebookUtil {
 	/**
+	 * The align
+	 *
+	 * @var string
+	 */
+	protected string $align;
+
+	/**
 	 * The cache directory
 	 *
 	 * @var string
 	 */
-	protected $cache;
+	protected string $cache;
+
+	/**
+	 * The fill
+	 *
+	 * @var string
+	 */
+	protected string $fill;
+
+	/**
+	 * The font
+	 *
+	 * @var string
+	 */
+	protected string $font;
 
 	/**
 	 * The fonts array
 	 *
 	 * @var array
 	 */
-	protected $fonts;
+	protected array $fonts;
 
 	/**
 	 * The public path
 	 *
 	 * @var string
 	 */
-	protected $path;
+	protected string $path;
 
 	/**
 	 * The prefix
 	 *
 	 * @var string
 	 */
-	protected $prefix;
+	protected string $prefix;
 
 	/**
 	 * The RouterInterface instance
@@ -54,11 +75,32 @@ class FacebookUtil {
 	protected RouterInterface $router;
 
 	/**
+	 * The size
+	 *
+	 * @var int
+	 */
+	protected int $size;
+
+	/**
 	 * The source
+	 *
+	 * @var ?string
+	 */
+	protected ?string $source;
+
+	/**
+	 * The stroke
 	 *
 	 * @var string
 	 */
-	protected $source;
+	protected string $stroke;
+
+	/**
+	 * The width
+	 *
+	 * @var int
+	 */
+	protected int $width;
 
 	/**
 	 * Creates a new facebook util
@@ -67,10 +109,27 @@ class FacebookUtil {
 	 * @param string $cache The cache directory
 	 * @param string $path The public path
 	 * @param string $prefix The prefix
+	 * @param ?string $source The source
+	 * @param array $fonts The fonts
+	 * @param string $font The font
+	 * @param int $size The size
+	 * @param int $width The width
+	 * @param string $fill The fill
+	 * @param string $stroke The stroke
+	 * @param string $align The align
 	 */
-	function __construct(RouterInterface $router, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'facebook', string $source = 'png/facebook.png', array $fonts = [ 'default' => 'ttf/default.ttf' ]) {
+	function __construct(RouterInterface $router, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'facebook', ?string $source = null, array $fonts = [ 'default' => 'ttf/default.ttf' ], string $font = 'default', int $size = 60, int $width = 15, string $fill = 'white', string $stroke = '#00c3f9', string $align = 'center') {
+		//Set align
+		$this->align = $align;
+
 		//Set cache
 		$this->cache = $cache.'/'.$prefix;
+
+		//Set fill
+		$this->fill = $fill;
+
+		//Set font
+		$this->font = $font;
 
 		//Set fonts
 		$this->fonts = $fonts;
@@ -78,14 +137,23 @@ class FacebookUtil {
 		//Set path
 		$this->path = $path.'/'.$prefix;
 
-		//Set router
-		$this->router = $router;
-
 		//Set prefix key
 		$this->prefix = $prefix;
 
+		//Set router
+		$this->router = $router;
+
+		//Set size
+		$this->size = $size;
+
 		//Set source
 		$this->source = $source;
+
+		//Set stroke
+		$this->stroke = $stroke;
+
+		//Set width
+		$this->width = $width;
 	}
 
 	/**
@@ -102,6 +170,16 @@ class FacebookUtil {
 	 * @return array The image array
 	 */
 	public function getImage(string $pathInfo, array $texts, int $updated, ?string $source = null, int $width = 1200, int $height = 630): array {
+		//Without source
+		if ($source === null && $this->source === null) {
+			//Return empty image data
+			return [];
+		//Without local source
+		} elseif ($source === null) {
+			//Set local source
+			$source = $this->source;
+		}
+
 		//Set path file
 		$path = $this->path.$pathInfo.'.jpeg';
 
@@ -151,12 +229,6 @@ class FacebookUtil {
 			}
 		}
 
-		//Without source
-		if ($source === null) {
-			//Set source
-			$source = realpath($this->source);
-		}
-
 		//Create image object
 		$image = new \Imagick();
 
@@ -177,7 +249,17 @@ class FacebookUtil {
 				}
 			}
 
+			//Without source
+			if (!is_file($source)) {
+				//Throw error
+				throw new \Exception(sprintf('Source file "%s" do not exists', $this->source));
+			}
+
+			//Convert to absolute path
+			$source = realpath($source);
+
 			//Read image
+			//XXX: Imagick::readImage only supports absolute path
 			$image->readImage($source);
 
 			//Crop using aspect ratio
@@ -214,24 +296,6 @@ class FacebookUtil {
 			'right' => \Imagick::ALIGN_RIGHT
 		];
 
-		//Set default font
-		$defaultFont = 'dejavusans';
-
-		//Set default align
-		$defaultAlign = 'center';
-
-		//Set default size
-		$defaultSize = 60;
-
-		//Set default stroke
-		$defaultStroke = '#00c3f9';
-
-		//Set default width
-		$defaultWidth = 15;
-
-		//Set default fill
-		$defaultFill = 'white';
-
 		//Init counter
 		$i = 1;
 
@@ -241,16 +305,16 @@ class FacebookUtil {
 		//Draw each text stroke
 		foreach($texts as $text => $data) {
 			//Set font
-			$draw->setFont($this->fonts[$data['font']??$defaultFont]);
+			$draw->setFont($this->fonts[$data['font']??$this->font]);
 
 			//Set font size
-			$draw->setFontSize($data['size']??$defaultSize);
+			$draw->setFontSize($data['size']??$this->size);
 
 			//Set stroke width
-			$draw->setStrokeWidth($data['width']??$defaultWidth);
+			$draw->setStrokeWidth($data['width']??$this->width);
 
 			//Set text alignment
-			$draw->setTextAlignment($align = ($aligns[$data['align']??$defaultAlign]));
+			$draw->setTextAlignment($align = ($aligns[$data['align']??$this->align]));
 
 			//Get font metrics
 			$metrics = $image->queryFontMetrics($draw, $text);
@@ -278,10 +342,10 @@ class FacebookUtil {
 			$texts[$text]['y'] = $data['y'] += $metrics['ascender'] - $metrics['textHeight']/2;
 
 			//Set stroke color
-			$draw->setStrokeColor(new \ImagickPixel($data['stroke']??$defaultStroke));
+			$draw->setStrokeColor(new \ImagickPixel($data['stroke']??$this->stroke));
 
 			//Set fill color
-			$draw->setFillColor(new \ImagickPixel($data['stroke']??$defaultStroke));
+			$draw->setFillColor(new \ImagickPixel($data['stroke']??$this->stroke));
 
 			//Add annotation
 			$draw->annotation($data['x'], $data['y'], $text);
@@ -325,16 +389,16 @@ class FacebookUtil {
 		//Draw each text
 		foreach($texts as $text => $data) {
 			//Set font
-			$draw->setFont($this->fonts[$data['font']??$defaultFont]);
+			$draw->setFont($this->fonts[$data['font']??$this->font]);
 
 			//Set font size
-			$draw->setFontSize($data['size']??$defaultSize);
+			$draw->setFontSize($data['size']??$this->size);
 
 			//Set text alignment
-			$draw->setTextAlignment($aligns[$data['align']??$defaultAlign]);
+			$draw->setTextAlignment($aligns[$data['align']??$this->align]);
 
 			//Set fill color
-			$draw->setFillColor(new \ImagickPixel($data['fill']??$defaultFill));
+			$draw->setFillColor(new \ImagickPixel($data['fill']??$this->fill));
 
 			//Add annotation
 			$draw->annotation($data['x'], $data['y'], $text);
