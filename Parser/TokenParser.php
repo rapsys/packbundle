@@ -352,7 +352,7 @@ class TokenParser extends AbstractTokenParser {
 
 		//Check that we have a / separator between bundle name and path
 		if (($pos = strpos($file, '/')) === false) {
-			throw new Error(sprintf('Invalid path "%s"', $file), $token->getLine(), $stream->getSourceContext());
+			throw new Error(sprintf('Invalid path "%s"', $file), $lineno, $source);
 		}
 
 		//Set bundle
@@ -405,7 +405,7 @@ class TokenParser extends AbstractTokenParser {
 				//Catch bundle does not exist or is not enabled exception again
 			} catch(\InvalidArgumentException $e) {
 				//Bail out as bundle or path is invalid and we have no way to know what was meant
-				throw new Error(sprintf('Invalid bundle name "%s" in path "%s". Maybe you meant "%s"', substr($file, 1, $pos - 1), $file, $bundle.'/'.$path), $token->getLine(), $stream->getSourceContext(), $e);
+				throw new Error(sprintf('Invalid bundle name "%s" in path "%s". Maybe you meant "%s"', substr($file, 1, $pos - 1), $file, $bundle.'/'.$path), $lineno, $source, $e);
 			}
 		}
 
