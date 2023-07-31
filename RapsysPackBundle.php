@@ -46,4 +46,14 @@ class RapsysPackBundle extends Bundle {
 		//Return underscored lowercase bundle alias
 		return Container::underscore(substr(static::class, $npos, $bpos));
 	}
+
+	/**
+	 * Return bundle version
+	 *
+	 * @return string The bundle version
+	 */
+	public static function getVersion(): string {
+		//Return version
+		return '0.2.5';
+	}
 }
