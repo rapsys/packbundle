@@ -42,7 +42,7 @@ class Configuration implements ConfigurationInterface {
 				'name' => 'asset_url',
 				'scheme' => 'https://',
 				'timeout' => (int)ini_get('default_socket_timeout'),
-				'agent' => (string)ini_get('user_agent')?:'rapsys_pack/0.2.4',
+				'agent' => $alias.'/'.($version = RapsysPackBundle::getVersion()),
 				'redirect' => 5
 			],
 			#TODO: migrate to public.path, public.url and router->generateUrl ?
