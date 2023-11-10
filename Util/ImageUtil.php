@@ -84,21 +84,6 @@ class ImageUtil {
 	 */
 	protected SluggerUtil $slugger;
 
-	//Captcha background
-	protected string $captchaBackground;
-
-	//Captcha fill
-	protected string $captchaFill;
-
-	//Captcha font size
-	protected int $captchaFontSize;
-
-	//Captcha stroke
-	protected string $captchaStroke;
-
-	//Captcha stroke width
-	protected int $captchaStrokeWidth;
-
 	/**
 	 * The captcha background
 	 */
