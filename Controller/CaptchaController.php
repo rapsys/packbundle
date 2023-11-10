@@ -36,13 +36,6 @@ class CaptchaController extends AbstractController implements ServiceSubscriberI
 	protected string $cache;
 
 	/**
-	 * The ContainerInterface instance
-	 *
-	 * @var ContainerInterface 
-	 */
-	protected $container;
-
-	/**
 	 * The stream context instance
 	 */
 	protected mixed $ctx;
