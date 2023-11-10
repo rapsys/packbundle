@@ -40,7 +40,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 	 *
 	 * @var ContainerInterface 
 	 */
-	protected $container;
+	#protected $container;
 
 	/**
 	 * The ImageUtil instance
