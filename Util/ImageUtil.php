@@ -100,6 +100,31 @@ class ImageUtil {
 	protected int $captchaStrokeWidth;
 
 	/**
+	 * The captcha background
+	 */
+	public string $captchaBackground;
+
+	/**
+	 * The captcha fill
+	 */
+	public string $captchaFill;
+
+	/**
+	 * The captcha font size
+	 */
+	public int $captchaFontSize;
+
+	/**
+	 * The captcha stroke
+	 */
+	public string $captchaStroke;
+
+	/**
+	 * The captcha stroke width
+	 */
+	public int $captchaStrokeWidth;
+
+	/**
 	 * Creates a new image util
 	 *
 	 * @param RouterInterface $router The RouterInterface instance
@@ -108,23 +133,23 @@ class ImageUtil {
 	 * @param string $path The public path
 	 * @param string $prefix The prefix
 	 */
-	function __construct(RouterInterface $router, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image', $captchaBackground = self::captchaBackground, $captchaFill = self::captchaFill, $captchaFontSize = self::captchaFontSize, $captchaStroke = self::captchaStroke, $captchaStrokeWidth = self::captchaStrokeWidth) {
+	function __construct(RouterInterface $router, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image', string $captchaBackground = self::captchaBackground, string $captchaFill = self::captchaFill, int $captchaFontSize = self::captchaFontSize, string $captchaStroke = self::captchaStroke, int $captchaStrokeWidth = self::captchaStrokeWidth) {
 		//Set cache
 		$this->cache = $cache.'/'.$prefix;
 
-		//set captcha background
+		//Set captcha background
 		$this->captchaBackground = $captchaBackground;
 
-		//set captcha fill
+		//Set captcha fill
 		$this->captchaFill = $captchaFill;
 
-		//set captcha font size
+		//Set captcha font size
 		$this->captchaFontSize = $captchaFontSize;
 
-		//set captcha stroke
+		//Set captcha stroke
 		$this->captchaStroke = $captchaStroke;
 
-		//set captcha stroke width
+		//Set captcha stroke width
 		$this->captchaStrokeWidth = $captchaStrokeWidth;
 
 		//Set path
