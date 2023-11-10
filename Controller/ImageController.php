@@ -151,7 +151,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 			$draw->setFontSize($this->image->captchaFontSize/1.5);
 
 			//Set stroke width
-			$draw->setStrokeWidth($this->image->captchaStrokeWidth / 2);
+			$draw->setStrokeWidth($this->image->captchaStrokeWidth / 3);
 
 			//Set rotation
 			$draw->rotate($rotate = (rand(25, 75)*(rand(0,1)?-.1:.1)));
