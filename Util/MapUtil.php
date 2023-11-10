@@ -410,13 +410,14 @@ class MapUtil {
 	 */
 	public static function latitudeToSexagesimal(float $latitude): string {
 		//Set degree
-		$degree = $latitude % 60;
+		//TODO: see if round or intval is better suited to fix the Deprecated: Implicit conversion from float to int loses precision
+		$degree = round($latitude) % 60;
 
 		//Set minute
-		$minute = ($latitude - $degree) * 60 % 60;
+		$minute = round(($latitude - $degree) * 60) % 60;
 
 		//Set second
-		$second = ($latitude - $degree - $minute / 60) * 3600 % 3600;
+		$second = round(($latitude - $degree - $minute / 60) * 3600) % 3600;
 
 		//Return sexagesimal longitude
 		return $degree.'°'.$minute.'\''.$second.'"'.($latitude >= 0 ? 'N' : 'S');
@@ -431,13 +432,14 @@ class MapUtil {
 	 */
 	public static function longitudeToSexagesimal(float $longitude): string {
 		//Set degree
-		$degree = $longitude % 60;
+		//TODO: see if round or intval is better suited to fix the Deprecated: Implicit conversion from float to int loses precision
+		$degree = round($longitude) % 60;
 
 		//Set minute
-		$minute = ($longitude - $degree) * 60 % 60;
+		$minute = round(($longitude - $degree) * 60) % 60;
 
 		//Set second
-		$second = ($longitude - $degree - $minute / 60) * 3600 % 3600;
+		$second = round(($longitude - $degree - $minute / 60) * 3600) % 3600;
 
 		//Return sexagesimal longitude
 		return $degree.'°'.$minute.'\''.$second.'"'.($longitude >= 0 ? 'E' : 'W');
