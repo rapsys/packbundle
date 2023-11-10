@@ -67,7 +67,7 @@ class CaptchaType extends AbstractType {
 	 *
 	 * {@inheritdoc}
 	 */
-	public function buildForm(FormBuilderInterface $builder, array $options) {
+	public function buildForm(FormBuilderInterface $builder, array $options): void {
 		//Set captcha
 		$captcha = $this->image->getCaptcha((new \DateTime('-1 year'))->getTimestamp());
 
