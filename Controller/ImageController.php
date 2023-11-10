@@ -36,13 +36,6 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 	protected string $cache;
 
 	/**
-	 * The ContainerInterface instance
-	 *
-	 * @var ContainerInterface 
-	 */
-	#protected $container;
-
-	/**
 	 * The ImageUtil instance
 	 */
 	protected ImageUtil $image;
