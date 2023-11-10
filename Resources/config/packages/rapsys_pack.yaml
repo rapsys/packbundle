@@ -69,6 +69,7 @@ services:
     Rapsys\PackBundle\Controller\MapController:
         arguments: [ '@service_container', '@rapsys_pack.map_util', '@rapsys_pack.slugger_util', '%kernel.project_dir%/var/cache', '%rapsys_pack.path%' ]
         tags: [ 'controller.service_arguments' ]
+    #Register captcha form type
     Rapsys\PackBundle\Form\CaptchaType:
         arguments: [ '@rapsys_pack.image_util', '@rapsys_pack.slugger_util', '@translator' ]
         tags: [ 'form.type' ]
