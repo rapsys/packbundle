@@ -36,13 +36,6 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 	protected string $cache;
 
 	/**
-	 * The ContainerInterface instance
-	 *
-	 * @var ContainerInterface
-	 */
-	protected $container;
-
-	/**
 	 * The stream context instance
 	 */
 	protected mixed $ctx;
