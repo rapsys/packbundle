@@ -12,36 +12,40 @@
 namespace Rapsys\PackBundle\Util;
 
 /**
- * Helps manage string conversions
+ * Manages string conversions
  */
 class SluggerUtil {
-	//The secret parameter
-	private $secret;
+	/**
+	 * The alpha array
+	 */
+	protected array $alpha;
 
-	//The alpha array
-	private $alpha;
+	/**
+	 * The rev array
+	 */
+	protected array $rev;
 
-	//The rev array
-	private $rev;
+	/**
+	 * The alpha array key number
+	 */
+	protected int $count;
 
-	//The alpha array key number
-	private $count;
-
-	//The offset reduced from secret
-	private $offset;
+	/**
+	 * The offset reduced from secret
+	 */
+	protected int $offset;
 
 	/**
 	 * Construct slugger util
+	 *
+	 * TODO: use a recipe to generate in .env.local an env variable RAPSYSPACK_SECRET="ayl[...]z9w"
 	 *
 	 * @todo Add a command to generate alpha array or generate it on first run with cache storage ?
 	 * @todo Use Cache like in calendar controller through FilesystemAdapter
 	 *
 	 * @param string $secret The secret string
 	 */
-	public function __construct(string $secret) {
-		//Set secret
-		$this->secret = $secret;
-
+	public function __construct(protected string $secret) {
 		/**
 		 * Pseudo-random alphabet
 		 * @xxx use array flip and keys to workaround php "smart" that cast range('0', '9') as int instead of string
