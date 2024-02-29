@@ -15,41 +15,40 @@ use Twig\Error\SyntaxError;
 use Twig\Environment;
 
 /**
- * Helps manage intl conversions
- *
- * @TODO Makes this class strict !!!
+ * Manages intl conversions
  */
 class IntlUtil {
 	/**
-	 * Construct intl util
+	 * Format date
 	 */
-	public function __construct() {
-	}
-
-	public function date(Environment $env, $date, $dateFormat = 'medium', $timeFormat = 'medium', $locale = null, $timezone = null, $format = null, $calendar = 'gregorian') {
+	public function date(Environment $env, \DateTime $date, string $dateFormat = 'medium', string $timeFormat = 'medium', ?string $locale = null, \IntlTimeZone|\DateTimeZone|string|null $timezone = null, ?string $calendar = null, ?string $pattern = null) {
 		$date = twig_date_converter($env, $date, $timezone);
 
-		$formatValues = array(
+		//Set date and time formatters
+		$formatters = [
 			'none' => \IntlDateFormatter::NONE,
 			'short' => \IntlDateFormatter::SHORT,
 			'medium' => \IntlDateFormatter::MEDIUM,
 			'long' => \IntlDateFormatter::LONG,
 			'full' => \IntlDateFormatter::FULL,
-		);
+		];
 
 		$formatter = \IntlDateFormatter::create(
 			$locale,
-			$formatValues[$dateFormat],
-			$formatValues[$timeFormat],
+			$formatters[$dateFormat],
+			$formatters[$timeFormat],
 			\IntlTimeZone::createTimeZone($date->getTimezone()->getName()),
-			'gregorian' === $calendar ? \IntlDateFormatter::GREGORIAN : \IntlDateFormatter::TRADITIONAL,
-			$format
+			'traditional' === $calendar ? \IntlDateFormatter::TRADITIONAL : \IntlDateFormatter::GREGORIAN,
+			$pattern
 		);
 
 		return $formatter->format($date->getTimestamp());
 	}
 
-	public function number($number, $style = 'decimal', $type = 'default', $locale = null) {
+	/**
+	 * Format number
+	 */
+	public function number(int|float $number, $style = 'decimal', $type = 'default', ?string $locale = null) {
 		static $typeValues = array(
 			'default' => NumberFormatter::TYPE_DEFAULT,
 			'int32' => NumberFormatter::TYPE_INT32,
@@ -67,32 +66,38 @@ class IntlUtil {
 		return $formatter->format($number, $typeValues[$type]);
 	}
 
-	public function currency($number, $currency = null, $locale = null) {
+	/**
+	 * Format currency
+	 */
+	public function currency(int|float $number, string $currency, ?string $locale = null) {
 		$formatter = $this->getNumberFormatter($locale, 'currency');
 
 		return $formatter->formatCurrency($number, $currency);
 	}
 
 	/**
-	 * Gets a number formatter instance according to given locale and formatter.
+	 * Gets number formatter instance matching locale and style.
 	 *
-	 * @param string $locale Locale in which the number would be formatted
-	 * @param int    $style  Style of the formatting
+	 * @param ?string $locale Locale in which the number would be formatted
+	 * @param string $style Style of the formatting
 	 *
 	 * @return NumberFormatter A NumberFormatter instance
 	 */
-	protected function getNumberFormatter($locale, $style): \NumberFormatter {
-		static $formatter, $currentStyle;
+	protected function getNumberFormatter(?string $locale, string $style): \NumberFormatter {
+		//Set static formatters
+		static $formatters = [];
 
+		//Set locale
 		$locale = null !== $locale ? $locale : Locale::getDefault();
 
-		if ($formatter && $formatter->getLocale() === $locale && $currentStyle === $style) {
-			// Return same instance of NumberFormatter if parameters are the same
-			// to those in previous call
-			return $formatter;
+		//With existing formatter
+		if (isset($formatters[$locale][$style])) {
+			//Return the instance from previous call
+			return $formatters[$locale][$style];
 		}
 
-		static $styleValues = array(
+		//Set styles
+		static $styles = [
 			'decimal' => \NumberFormatter::DECIMAL,
 			'currency' => \NumberFormatter::CURRENCY,
 			'percent' => \NumberFormatter::PERCENT,
@@ -100,16 +105,14 @@ class IntlUtil {
 			'spellout' => \NumberFormatter::SPELLOUT,
 			'ordinal' => \NumberFormatter::ORDINAL,
 			'duration' => \NumberFormatter::DURATION,
-		);
+		];
 
-		if (!isset($styleValues[$style])) {
+		//Without styles
+		if (!isset($styles[$style])) {
 			throw new SyntaxError(sprintf('The style "%s" does not exist. Known styles are: "%s"', $style, implode('", "', array_keys($styleValues))));
 		}
 
-		$currentStyle = $style;
-
-		$formatter = \NumberFormatter::create($locale, $styleValues[$style]);
-
-		return $formatter;
+		//Return number formatter
+		return ($formatters[$locale][$style] = \NumberFormatter::create($locale, $styles[$style]));
 	}
 }
