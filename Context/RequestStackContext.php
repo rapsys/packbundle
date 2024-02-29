@@ -18,24 +18,12 @@ use Symfony\Component\HttpFoundation\RequestStack;
  * {@inheritdoc}
  */
 class RequestStackContext extends BaseRequestStackContext {
-	//RequestStack instance
-	private $requestStack;
-
-	//Base path
-	private $basePath;
-
 	/**
 	 * {@inheritdoc}
 	 */
-	public function __construct(RequestStack $requestStack, string $basePath = '', bool $secure = false) {
+	public function __construct(protected RequestStack $requestStack, protected string $basePath = '', protected bool $secure = false) {
 		//Call parent constructor
 		parent::__construct($requestStack, $basePath, $secure);
-
-		//Set request stack
-		$this->requestStack = $requestStack;
-
-		//Set base path
-		$this->basePath = $basePath;
 	}
 
 	/**
