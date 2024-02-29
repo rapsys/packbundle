@@ -26,35 +26,10 @@ use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
 class TokenParser extends AbstractTokenParser {
-	///The locator
-	protected $locator;
-
-	///The package
-	protected $package;
-
-	///The name
-	protected $name;
-
-	///The scheme
-	protected $scheme;
-
-	///The timeout
-	protected $timeout;
-
-	///The agent
-	protected $agent;
-
-	///The redirect
-	protected $redirect;
-
-	///The tag name
-	protected $tag;
-
-	///The output
-	protected $output;
-
-	///The filters
-	protected $filters;
+	/**
+	 * The stream context instance
+	 */
+	protected mixed $ctx;
 
 	/**
 	 * Constructor
@@ -66,36 +41,23 @@ class TokenParser extends AbstractTokenParser {
 	 * @param string $output The default output string
 	 * @param array $filters The default filters array
 	 */
-	public function __construct(FileLocator $locator, PackageInterface $package, array $config, string $tag, string $output, array $filters) {
-		//Save locator
-		$this->locator = $locator;
-
-		//Save assets package
-		$this->package = $package;
-
-		//Set name
-		$this->name = $config['name'];
-
-		//Set scheme
-		$this->scheme = $config['scheme'];
-
-		//Set timeout
-		$this->timeout = $config['timeout'];
-
-		//Set agent
-		$this->agent = $config['agent'];
-
-		//Set redirect
-		$this->redirect = $config['redirect'];
-
-		//Set tag
-		$this->tag = $tag;
-
-		//Set output
-		$this->output = $output;
-
-		//Set filters
-		$this->filters = $filters;
+	//TODO: change config to name and get other values from RAPSYSPACK_REDIRECT, RAPSYSPACK_SCHEME, RAPSYSPACK_TIMEOUT, RAPSYSPACK_AGENT env variables ?
+	public function __construct(protected FileLocator $locator, protected PackageInterface $package, protected array $config, protected string $tag, protected string $output, protected array $filters) {
+		//Set ctx
+		$this->ctx = stream_context_create(
+			[
+				'http' => [
+					#'header' => ['Referer: https://www.openstreetmap.org/'],
+					//TODO: set as bundle env config
+					'max_redirects' => $config['redirect']?:5,
+					//TODO: set as bundle env config
+					'timeout' => $config['timeout']?:(int)ini_get('default_socket_timeout'),
+					#'user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
+					//TODO: set as bundle env config
+					'user_agent' => $config['agent']?:(string)ini_get('user_agent')?:'rapsys_pack/2.0.0',
+				]
+			]
+		);
 	}
 
 	/**
@@ -122,7 +84,7 @@ class TokenParser extends AbstractTokenParser {
 		$stream = $this->parser->getStream();
 
 		$inputs = [];
-		$name = $this->name;
+		$name = $this->config['name'];
 		$output = $this->output;
 		$filters = $this->filters;
 
@@ -179,7 +141,8 @@ class TokenParser extends AbstractTokenParser {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
 				//Fix url
-				$inputs[$k] = $this->scheme.substr($inputs[$k], 2);
+				//TODO: set as bundle env config
+				$inputs[$k] = $this->config['scheme'].substr($inputs[$k], 2);
 			//Deal with non url path
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
@@ -210,23 +173,12 @@ class TokenParser extends AbstractTokenParser {
 			}
 		}
 
-		//Init context
-		$ctx = stream_context_create(
-			[
-				'http' => [
-					'timeout' => $this->timeout,
-					'user_agent' => $this->agent,
-					'redirect' => $this->redirect,
-				]
-			]
-		);
-
 		//Check inputs
 		if (!empty($inputs)) {
 			//Retrieve files content
 			foreach($inputs as $input) {
 				//Try to retrieve content
-				if (($data = file_get_contents($input, false, $ctx)) === false) {
+				if (($data = file_get_contents($input, false, $this->ctx)) === false) {
 					throw new Error(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
 				}
 				//Append content
@@ -341,7 +293,7 @@ class TokenParser extends AbstractTokenParser {
 	 * @param Exception $prev The previous exception
 	 * @return string The resolved file path
 	 */
-	public function getLocated(string $file, int $lineno = 0, Source $source = null, \Exception $prev = null): string {
+	public function getLocated(string $file, int $lineno = 0, ?Source $source = null, ?\Exception $prev = null): string {
 		/*TODO: add a @jquery magic feature ?
 		if ($file == '@jquery') {
 			#header('Content-Type: text/plain');
