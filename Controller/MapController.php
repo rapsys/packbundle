@@ -11,9 +11,10 @@
 
 namespace Rapsys\PackBundle\Controller;
 
+use Psr\Container\ContainerInterface;
+
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -31,34 +32,9 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  */
 class MapController extends AbstractController implements ServiceSubscriberInterface {
 	/**
-	 * The cache path
-	 */
-	protected string $cache;
-
-	/**
 	 * The stream context instance
 	 */
 	protected mixed $ctx;
-
-	/**
-	 * The MapUtil instance
-	 */
-	protected MapUtil $map;
-
-	/**
-	 * The public path
-	 */
-	protected string $path;
-
-	/**
-	 * The SluggerUtil instance
-	 */
-	protected SluggerUtil $slugger;
-
-	/**
-	 * The tile server url
-	 */
-	protected string $url;
 
 	/**
 	 * Creates a new osm controller
@@ -68,40 +44,24 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 * @param string $cache The cache path
 	 * @param string $path The public path
-#	 * @param string $prefix The prefix
+	 * @param string $prefix The prefix
 	 * @param string $url The tile server url
 	 */
-	function __construct(ContainerInterface $container, MapUtil $map, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'map', string $url = MapUtil::osm) {
-		//Set cache
-		$this->cache = $cache.'/'.$prefix;
-
-		//Set container
-		$this->container = $container;
-
+	function __construct(protected ContainerInterface $container, protected MapUtil $map, protected SluggerUtil $slugger, protected string $cache = '../var/cache', protected string $path = './bundles/rapsyspack', protected string $prefix = 'map', protected string $url = MapUtil::osm) {
 		//Set ctx
 		$this->ctx = stream_context_create(
 			[
 				'http' => [
 					#'header' => ['Referer: https://www.openstreetmap.org/'],
 					'max_redirects' => 5,
+					//TODO: set as bundle env config
 					'timeout' => (int)ini_get('default_socket_timeout'),
 					#'user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
+					//TODO: set as bundle env config
 					'user_agent' => (string)ini_get('user_agent')?:'rapsys_pack/2.0.0',
 				]
 			]
 		);
-
-		//Set map
-		$this->map = $map;
-
-		//Set path
-		$this->path = $path.'/'.$prefix;
-
-		//Set slugger
-		$this->slugger = $slugger;
-
-		//Set url
-		$this->url = $url;
 	}
 
 	/**
@@ -125,7 +85,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		}
 
 		//Set map
-		$map = $this->path.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$width.'x'.$height.'.jpeg';
+		$map = $this->path.'/'.$this->prefix.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$width.'x'.$height.'.jpeg';
 
 		//Without multi up to date file
 		if (!is_file($map) || !($mtime = stat($map)['mtime']) || $mtime < $updated) {
@@ -169,7 +129,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 			for($x = $startX; $x <= $endX; $x++) {
 				for($y = $startY; $y <= $endY; $y++) {
 					//Set cache path
-					$cache = $this->cache.'/'.$zoom.'/'.$x.'/'.$y.'.png';
+					$cache = $this->cache.'/'.$this->prefix.'/'.$zoom.'/'.$x.'/'.$y.'.png';
 
 					//Without cache image
 					if (!is_file($cache)) {
@@ -322,7 +282,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 		}
 
 		//Set multi
-		$map = $this->path.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$coordinate.'/'.$width.'x'.$height.'.jpeg';
+		$map = $this->path.'/'.$this->prefix.'/'.$zoom.'/'.$latitude.'/'.$longitude.'/'.$coordinate.'/'.$width.'x'.$height.'.jpeg';
 
 		//Without multi up to date file
 		if (!is_file($map) || !($mtime = stat($map)['mtime']) || $mtime < $updated) {
@@ -366,7 +326,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 			for($x = $startX; $x <= $endX; $x++) {
 				for($y = $startY; $y <= $endY; $y++) {
 					//Set cache path
-					$cache = $this->cache.'/'.$zoom.'/'.$x.'/'.$y.'.png';
+					$cache = $this->cache.'/'.$this->prefix.'/'.$zoom.'/'.$x.'/'.$y.'.png';
 
 					//Without cache image
 					if (!is_file($cache)) {
@@ -437,36 +397,36 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 				$destY = intval(floor($height / 2 - MapUtil::tz * ($centerY - $this->map->latitudeToY(floatval($coordinate['latitude']), $zoom))));
 
 				//Set fill color
-				$draw->setFillColor($this->map->fill);
+				$draw->setFillColor($this->map->getFill());
 
 				//Set font size
-				$draw->setFontSize($this->map->fontSize);
+				$draw->setFontSize($this->map->getFontSize());
 
 				//Set stroke color
-				$draw->setStrokeColor($this->map->stroke);
+				$draw->setStrokeColor($this->map->getStroke());
 
 				//Set circle radius
-				$radius = $this->map->radius;
+				$radius = $this->map->getRadius();
 
 				//Set stroke width
-				$stroke = $this->map->strokeWidth;
+				$stroke = $this->map->getStrokeWidth();
 
 				//With matching position
 				if ($coordinate['latitude'] === $latitude && $coordinate['longitude'] == $longitude) {
 					//Set fill color
-					$draw->setFillColor($this->map->highFill);
+					$draw->setFillColor($this->map->getHighFill());
 
 					//Set font size
-					$draw->setFontSize($this->map->highFontSize);
+					$draw->setFontSize($this->map->getHighFontSize());
 
 					//Set stroke color
-					$draw->setStrokeColor($this->map->highStroke);
+					$draw->setStrokeColor($this->map->getHighStroke());
 
 					//Set circle radius
-					$radius = $this->map->highRadius;
+					$radius = $this->map->getHighRadius();
 
 					//Set stroke width
-					$stroke = $this->map->highStrokeWidth;
+					$stroke = $this->map->getHighStrokeWidth();
 				}
 
 				//Set stroke width
