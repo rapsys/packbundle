@@ -30,36 +30,13 @@ use Symfony\Component\Form\FormError;
  */
 class CaptchaType extends AbstractType {
 	/**
-	 * @var ImageUtil $image
-	 */
-	private $image;
-
-	/**
-	 * @var SluggerUtil $slugger
-	 */
-	private $slugger;
-
-	/**
-	 * @var Translator instance
-	 */
-	private $translator;
-
-	/**
 	 * Constructor
 	 *
 	 * @param ImageUtil $image
 	 * @param SluggerUtil $slugger
 	 * @param TranslatorInterface $translator The translator instance
 	 */
-	public function __construct(ImageUtil $image, SluggerUtil $slugger, TranslatorInterface $translator) {
-		//Set image
-		$this->image = $image;
-
-		//Set slugger
-		$this->slugger = $slugger;
-
-		//Set translator
-		$this->translator = $translator;
+	public function __construct(protected ImageUtil $image, protected SluggerUtil $slugger, protected TranslatorInterface $translator) {
 	}
 
 	/**
