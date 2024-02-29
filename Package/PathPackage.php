@@ -21,21 +21,20 @@ use Rapsys\PackBundle\Context\NullContext;
  * {@inheritdoc}
  */
 class PathPackage extends Package {
-	//The base path
-	protected $basePath;
-
-	//The base url
-	protected $baseUrl;
+	/**
+	 * The base url
+	 */
+	protected string $baseUrl;
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function __construct(string $basePath, VersionStrategyInterface $versionStrategy, ContextInterface $context = null) {
+	public function __construct(protected string $basePath, protected VersionStrategyInterface $versionStrategy, protected ?ContextInterface $context = null) {
 		//Without context use a null context
-		$context = $context ?? new NullContext();
+		$this->context = $this->context ?? new NullContext();
 
 		//Call parent constructor
-		parent::__construct($versionStrategy, $context);
+		parent::__construct($this->versionStrategy, $this->context);
 
 		//Without base path
 		if (empty($basePath)) {
@@ -54,7 +53,7 @@ class PathPackage extends Package {
 		}
 
 		//Set base url
-		$this->baseUrl = $context->getBaseUrl();
+		$this->baseUrl = $this->context->getBaseUrl();
 	}
 
 	/**
@@ -69,7 +68,7 @@ class PathPackage extends Package {
 	 *
 	 * {@inheritdoc}
 	 */
-	public function getUrl($path): string {
+	public function getUrl(string $path): string {
 		//Match url starting with a bundle name
 		if (preg_match('%^@([A-Z][a-zA-Z]*?)(?:Bundle/Resources/public)?/(.*)$%', $path, $matches)) {
 			//Handle empty or without replacement pattern basePath
