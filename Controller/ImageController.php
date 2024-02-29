@@ -11,9 +11,10 @@
 
 namespace Rapsys\PackBundle\Controller;
 
+use Psr\Container\ContainerInterface;
+
 use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -31,26 +32,6 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  */
 class ImageController extends AbstractController implements ServiceSubscriberInterface {
 	/**
-	 * The cache path
-	 */
-	protected string $cache;
-
-	/**
-	 * The ImageUtil instance
-	 */
-	protected ImageUtil $image;
-
-	/**
-	 * The public path
-	 */
-	protected string $path;
-
-	/**
-	 * The SluggerUtil instance
-	 */
-	protected SluggerUtil $slugger;
-
-	/**
 	 * Creates a new image controller
 	 *
 	 * @param ContainerInterface $container The ContainerInterface instance
@@ -60,21 +41,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 	 * @param string $path The public path
 	 * @param string $prefix The prefix
 	 */
-	function __construct(ContainerInterface $container, ImageUtil $image, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image') {
-		//Set cache
-		$this->cache = $cache.'/'.$prefix;
-
-		//Set container
-		$this->container = $container;
-
-		//Set image
-		$this->image = $image;
-
-		//Set path
-		$this->path = $path.'/'.$prefix;
-
-		//Set slugger
-		$this->slugger = $slugger;
+	function __construct(protected ContainerInterface $container, protected ImageUtil $image, protected SluggerUtil $slugger, protected string $cache = '../var/cache', protected string $path = './bundles/rapsyspack', protected string $prefix = 'image') {
 	}
 
 	/**
@@ -99,7 +66,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 		$hashed = array_reverse(str_split(strval($updated)));
 
 		//Set captcha
-		$captcha = $this->path.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$equation.'/'.$width.'x'.$height.'.jpeg';
+		$captcha = $this->path.'/'.$this->prefix.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$equation.'/'.$width.'x'.$height.'.jpeg';
 
 		//Unshort equation
 		$equation = $this->slugger->unshort($equation);
@@ -142,16 +109,16 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 			$draw->setGravity(\Imagick::GRAVITY_CENTER);
 
 			//Set fill color
-			$draw->setFillColor($this->image->captchaFill);
+			$draw->setFillColor($this->image->getFill());
 
 			//Set stroke color
-			$draw->setStrokeColor($this->image->captchaStroke);
+			$draw->setStrokeColor($this->image->getStroke());
 
 			//Set font size
-			$draw->setFontSize($this->image->captchaFontSize/1.5);
+			$draw->setFontSize($this->image->getFontSize() / 1.5);
 
 			//Set stroke width
-			$draw->setStrokeWidth($this->image->captchaStrokeWidth / 3);
+			$draw->setStrokeWidth($this->image->getStrokeWidth() / 3);
 
 			//Set rotation
 			$draw->rotate($rotate = (rand(25, 75)*(rand(0,1)?-.1:.1)));
@@ -160,16 +127,16 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 			$metrics2 = $image->queryFontMetrics($draw, strval('stop spam'));
 
 			//Add annotation
-			$draw->annotation($width / 2 - ceil(rand(intval(-$metrics2['textWidth']), intval($metrics2['textWidth'])) / 2) - abs($rotate), ceil($metrics2['textHeight'] + $metrics2['descender'] + $metrics2['ascender']) / 2 - $this->image->captchaStrokeWidth - $rotate, strval('stop spam'));
+			$draw->annotation($width / 2 - ceil(rand(intval(-$metrics2['textWidth']), intval($metrics2['textWidth'])) / 2) - abs($rotate), ceil($metrics2['textHeight'] + $metrics2['descender'] + $metrics2['ascender']) / 2 - $this->image->getStrokeWidth() - $rotate, strval('stop spam'));
 
 			//Set rotation
 			$draw->rotate(-$rotate);
 
 			//Set font size
-			$draw->setFontSize($this->image->captchaFontSize);
+			$draw->setFontSize($this->image->getFontSize());
 
 			//Set stroke width
-			$draw->setStrokeWidth($this->image->captchaStrokeWidth);
+			$draw->setStrokeWidth($this->image->getStrokeWidth());
 
 			//Set rotation
 			$draw->rotate($rotate = (rand(25, 50)*(rand(0,1)?-.1:.1)));
@@ -178,14 +145,14 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 			$metrics = $image->queryFontMetrics($draw, strval($equation));
 
 			//Add annotation
-			$draw->annotation($width / 2, ceil($metrics['textHeight'] + $metrics['descender'] + $metrics['ascender']) / 2 - $this->image->captchaStrokeWidth, strval($equation));
+			$draw->annotation($width / 2, ceil($metrics['textHeight'] + $metrics['descender'] + $metrics['ascender']) / 2 - $this->image->getStrokeWidth(), strval($equation));
 
 			//Set rotation
 			$draw->rotate(-$rotate);
 
 			//Add new image
-			#$image->newImage(intval(ceil($metrics['textWidth'])), intval(ceil($metrics['textHeight'] + $metrics['descender'])), new \ImagickPixel($this->image->captchaBackground), 'jpeg');
-			$image->newImage($width, $height, new \ImagickPixel($this->image->captchaBackground), 'jpeg');
+			#$image->newImage(intval(ceil($metrics['textWidth'])), intval(ceil($metrics['textHeight'] + $metrics['descender'])), new \ImagickPixel($this->image->getBackground()), 'jpeg');
+			$image->newImage($width, $height, new \ImagickPixel($this->image->getBackground()), 'jpeg');
 
 			//Draw on image
 			$image->drawImage($draw);
@@ -250,7 +217,7 @@ class ImageController extends AbstractController implements ServiceSubscriberInt
 		$hashed = array_reverse(str_split(strval($updated)));
 
 		//Set thumb
-		$thumb = $this->path.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$path.'/'.$width.'x'.$height.'.jpeg';
+		$thumb = $this->path.'/'.$this->prefix.'/'.$hashed[0].'/'.$hashed[1].'/'.$hashed[2].'/'.$updated.'/'.$path.'/'.$width.'x'.$height.'.jpeg';
 
 		//Unshort path
 		$path = $this->slugger->unshort($path);
