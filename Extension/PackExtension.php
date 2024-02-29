@@ -25,45 +25,27 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  * {@inheritdoc}
  */
 class PackExtension extends AbstractExtension {
-	//The config
-	private $config;
+	/**
+	 * The config array
+	 */
+	protected array $config;
 
-	//The output
-	private $output;
+	/**
+	 * The output array
+	 */
+	protected array $output;
 
-	//The filter
-	private $filters;
-
-	//The intl util
-	protected $intl;
-
-	//The file locator
-	protected $locator;
-
-	//The assets package
-	protected $package;
-
-	//The slugger util
-	protected $slugger;
+	/**
+	 * The filter array
+	 */
+	protected array $filters;
 
 	/**
 	 * @link https://twig.symfony.com/doc/2.x/advanced.html
 	 *
 	 * {@inheritdoc}
 	 */
-	public function __construct(ContainerInterface $container, IntlUtil $intl, FileLocator $locator, PackageInterface $package, SluggerUtil $slugger) {
-		//Set intl util
-		$this->intl = $intl;
-
-		//Set file locator
-		$this->locator = $locator;
-
-		//Set assets packages
-		$this->package = $package;
-
-		//Set slugger util
-		$this->slugger = $slugger;
-
+	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger) {
 		//Retrieve bundle config
 		if ($parameters = $container->getParameter(self::getAlias())) {
 			//Set config, output and filters arrays
