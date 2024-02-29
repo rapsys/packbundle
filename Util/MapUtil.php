@@ -14,7 +14,7 @@ namespace Rapsys\PackBundle\Util;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
- * Helps manage map
+ * Manages map
  */
 class MapUtil {
 	/**
@@ -55,7 +55,7 @@ class MapUtil {
 	const highStroke = '#3333c3';
 
 	/**
-	 * The high stroke size
+	 * The high stroke width
 	 */
 	const highStrokeWidth = 4;
 
@@ -87,7 +87,7 @@ class MapUtil {
 	const stroke = '#00c3f9';
 
 	/**
-	 * The stroke size
+	 * The stroke width
 	 */
 	const strokeWidth = 2;
 
@@ -109,107 +109,82 @@ class MapUtil {
 	const zoom = 17;
 
 	/**
-	 * The RouterInterface instance
-	 */
-	protected RouterInterface $router;
-
-	/**
-	 * The SluggerUtil instance
-	 */
-	protected SluggerUtil $slugger;
-
-	/**
-	 * The fill color
-	 */
-	public string $fill;
-
-	/**
-	 * The font size
-	 */
-	public int $fontSize;
-
-	/**
-	 * The high fill color
-	 */
-	public string $highFill;
-
-	/**
-	 * The font size
-	 */
-	public int $highFontSize;
-
-	/**
-	 * The radius size
-	 */
-	public int $highRadius;
-
-	/**
-	 * The high stroke color
-	 */
-	public string $highStroke;
-
-	/**
-	 * The stroke size
-	 */
-	public int $highStrokeWidth;
-
-	/**
-	 * The stroke color
-	 */
-	public string $stroke;
-
-	/**
-	 * The stroke size
-	 */
-	public int $strokeWidth;
-
-	/**
-	 * The radius size
-	 */
-	public int $radius;
-
-	/**
 	 * Creates a new map util
 	 *
 	 * @param RouterInterface $router The RouterInterface instance
 	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 */
-	function __construct(RouterInterface $router, SluggerUtil $slugger, string $fill = self::fill, int $fontSize = self::fontSize, string $highFill = self::highFill, int $highFontSize = self::highFontSize, int $highRadius = self::highRadius, string $highStroke = self::highStroke, int $highStrokeWidth = self::highStrokeWidth, int $radius = self::radius, string $stroke = self::stroke, int $strokeWidth = self::strokeWidth) {
-		//Set router
-		$this->router = $router;
+	function __construct(protected RouterInterface $router, protected SluggerUtil $slugger, protected string $fill = self::fill, protected int $fontSize = self::fontSize, protected string $highFill = self::highFill, protected int $highFontSize = self::highFontSize, protected int $highRadius = self::highRadius, protected string $highStroke = self::highStroke, protected int $highStrokeWidth = self::highStrokeWidth, protected int $radius = self::radius, protected string $stroke = self::stroke, protected int $strokeWidth = self::strokeWidth) {
+	}
 
-		//Set slugger
-		$this->slugger = $slugger;
+	/**
+	 * Get fill color
+	 */
+	function getFill() {
+		return $this->fill;
+	}
 
-		//Set fill
-		$this->fill = $fill;
+	/**
+	 * Get font size
+	 */
+	function getFontSize() {
+		return $this->fontSize;
+	}
 
-		//Set font size
-		$this->fontSize = $fontSize;
+	/**
+	 * Get high fill color
+	 */
+	function getHighFill() {
+		return $this->highFill;
+	}
 
-		//Set highFill
-		$this->highFill = $highFill;
+	/**
+	 * Get high font size
+	 */
+	function getHighFontSize() {
+		return $this->highFontSize;
+	}
 
-		//Set high font size
-		$this->highFontSize = $highFontSize;
+	/**
+	 * Get high radius size
+	 */
+	function getHighRadius() {
+		return $this->highRadius;
+	}
 
-		//Set high radius size
-		$this->highRadius = $highRadius;
+	/**
+	 * Get high stroke color
+	 */
+	function getHighStroke() {
+		return $this->highStroke;
+	}
 
-		//Set highStroke
-		$this->highStroke = $highStroke;
+	/**
+	 * Get high stroke width
+	 */
+	function getHighStrokeWidth() {
+		return $this->highStrokeWidth;
+	}
 
-		//Set high stroke size
-		$this->highStrokeWidth = $highStrokeWidth;
+	/**
+	 * Get radius size
+	 */
+	function getRadius() {
+		return $this->radius;
+	}
 
-		//Set radius size
-		$this->radius = $radius;
+	/**
+	 * Get stroke color
+	 */
+	function getStroke() {
+		return $this->stroke;
+	}
 
-		//Set stroke
-		$this->stroke = $stroke;
-
-		//Set stroke size
-		$this->strokeWidth = $strokeWidth;
+	/**
+	 * Get stroke width
+	 */
+	function getStrokeWidth() {
+		return $this->strokeWidth;
 	}
 
 	/**
@@ -252,6 +227,12 @@ class MapUtil {
 	 * @return array The multi map data
 	 */
 	public function getMultiMap(string $caption, int $updated, array $coordinates, int $width = self::width, int $height = self::height): array {
+		//Without coordinates
+		if (empty($coordinates)) {
+			//Return empty array
+			return [];
+		}
+
 		//Set latitudes
 		$latitudes = array_map(function ($v) { return $v['latitude']; }, $coordinates);
 
