@@ -16,43 +16,43 @@ use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\RouterInterface;
 
 /**
- * Helps manage map
+ * Manages image
  */
 class ImageUtil {
 	/**
 	 * The captcha width
 	 */
-	const captchaWidth = 192;
+	const width = 192;
 
 	/**
 	 * The captcha height
 	 */
-	const captchaHeight = 52;
+	const height = 52;
 
 	/**
 	 * The captcha background color
 	 */
-	const captchaBackground = 'white';
+	const background = 'white';
 
 	/**
 	 * The captcha fill color
 	 */
-	const captchaFill = '#cff';
+	const fill = '#cff';
 
 	/**
 	 * The captcha font size
 	 */
-	const captchaFontSize = 45;
+	const fontSize = 45;
 
 	/**
 	 * The captcha stroke color
 	 */
-	const captchaStroke = '#00c3f9';
+	const stroke = '#00c3f9';
 
 	/**
 	 * The captcha stroke width
 	 */
-	const captchaStrokeWidth = 2;
+	const strokeWidth = 2;
 
 	/**
 	 * The thumb width
@@ -65,51 +65,6 @@ class ImageUtil {
 	const thumbHeight = 640;
 
 	/**
-	 * The cache path
-	 */
-	protected string $cache;
-
-	/**
-	 * The path
-	 */
-	protected string $path;
-
-	/**
-	 * The RouterInterface instance
-	 */
-	protected RouterInterface $router;
-
-	/**
-	 * The SluggerUtil instance
-	 */
-	protected SluggerUtil $slugger;
-
-	/**
-	 * The captcha background
-	 */
-	public string $captchaBackground;
-
-	/**
-	 * The captcha fill
-	 */
-	public string $captchaFill;
-
-	/**
-	 * The captcha font size
-	 */
-	public int $captchaFontSize;
-
-	/**
-	 * The captcha stroke
-	 */
-	public string $captchaStroke;
-
-	/**
-	 * The captcha stroke width
-	 */
-	public int $captchaStrokeWidth;
-
-	/**
 	 * Creates a new image util
 	 *
 	 * @param RouterInterface $router The RouterInterface instance
@@ -118,33 +73,7 @@ class ImageUtil {
 	 * @param string $path The public path
 	 * @param string $prefix The prefix
 	 */
-	function __construct(RouterInterface $router, SluggerUtil $slugger, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'image', string $captchaBackground = self::captchaBackground, string $captchaFill = self::captchaFill, int $captchaFontSize = self::captchaFontSize, string $captchaStroke = self::captchaStroke, int $captchaStrokeWidth = self::captchaStrokeWidth) {
-		//Set cache
-		$this->cache = $cache.'/'.$prefix;
-
-		//Set captcha background
-		$this->captchaBackground = $captchaBackground;
-
-		//Set captcha fill
-		$this->captchaFill = $captchaFill;
-
-		//Set captcha font size
-		$this->captchaFontSize = $captchaFontSize;
-
-		//Set captcha stroke
-		$this->captchaStroke = $captchaStroke;
-
-		//Set captcha stroke width
-		$this->captchaStrokeWidth = $captchaStrokeWidth;
-
-		//Set path
-		$this->path = $path.'/'.$prefix;
-
-		//Set router
-		$this->router = $router;
-
-		//Set slugger
-		$this->slugger = $slugger;
+	function __construct(protected RouterInterface $router, protected SluggerUtil $slugger, protected string $cache = '../var/cache', protected string $path = './bundles/rapsyspack', protected string $prefix = 'image', protected string $background = self::background, protected string $fill = self::fill, protected int $fontSize = self::fontSize, protected string $stroke = self::stroke, protected int $strokeWidth = self::strokeWidth) {
 	}
 
 	/**
@@ -155,7 +84,7 @@ class ImageUtil {
 	 * @param int $height The height
 	 * @return array The captcha data
 	 */
-	public function getCaptcha(int $updated, int $width = self::captchaWidth, int $height = self::captchaHeight): array {
+	public function getCaptcha(int $updated, int $width = self::width, int $height = self::height): array {
 		//Set a
 		$a = rand(0, 9);
 
@@ -219,6 +148,41 @@ class ImageUtil {
 	}
 
 	/**
+	 * Get captcha background color
+	 */
+	public function getBackground() {
+		return $this->background;
+	}
+
+	/**
+	 * Get captcha fill color
+	 */
+	public function getFill() {
+		return $this->fill;
+	}
+
+	/**
+	 * Get captcha font size
+	 */
+	public function getFontSize() {
+		return $this->fontSize;
+	}
+
+	/**
+	 * Get captcha stroke color
+	 */
+	public function getStroke() {
+		return $this->stroke;
+	}
+
+	/**
+	 * Get captcha stroke width
+	 */
+	public function getStrokeWidth() {
+		return $this->strokeWidth;
+	}
+
+	/**
 	 * Remove image
 	 *
 	 * @param int $updated The updated timestamp
@@ -230,7 +194,7 @@ class ImageUtil {
 		$hash = array_reverse(str_split(strval($updated)));
 
 		//Set dir
-		$dir = $this->path.'/'.$hash[0].'/'.$hash[1].'/'.$hash[2].'/'.$updated.'/'.$this->slugger->short($path);
+		$dir = $this->path.'/'.$this->prefix.'/'.$hash[0].'/'.$hash[1].'/'.$hash[2].'/'.$updated.'/'.$this->slugger->short($path);
 
 		//Set removes
 		$removes = [];
