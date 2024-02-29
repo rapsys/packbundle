@@ -21,86 +21,39 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class FacebookUtil {
 	/**
-	 * The align
-	 *
-	 * @var string
+	 * The default fonts
 	 */
-	protected string $align;
+	const fonts = [ 'default' => 'ttf/default.ttf' ];
 
 	/**
-	 * The cache directory
-	 *
-	 * @var string
+	 * The default font
 	 */
-	protected string $cache;
+	const font = 'default';
 
 	/**
-	 * The fill
-	 *
-	 * @var string
+	 * The default font size
 	 */
-	protected string $fill;
+	const size = 60;
 
 	/**
-	 * The font
-	 *
-	 * @var string
+	 * The default width
 	 */
-	protected string $font;
+	const width = 15;
 
 	/**
-	 * The fonts array
-	 *
-	 * @var array
+	 * The default fill
 	 */
-	protected array $fonts;
+	const fill = 'white';
 
 	/**
-	 * The public path
-	 *
-	 * @var string
+	 * The default stroke
 	 */
-	protected string $path;
+	const stroke = '#00c3f9';
 
 	/**
-	 * The prefix
-	 *
-	 * @var string
+	 * The default align
 	 */
-	protected string $prefix;
-
-	/**
-	 * The RouterInterface instance
-	 */
-	protected RouterInterface $router;
-
-	/**
-	 * The size
-	 *
-	 * @var int
-	 */
-	protected int $size;
-
-	/**
-	 * The source
-	 *
-	 * @var ?string
-	 */
-	protected ?string $source;
-
-	/**
-	 * The stroke
-	 *
-	 * @var string
-	 */
-	protected string $stroke;
-
-	/**
-	 * The width
-	 *
-	 * @var int
-	 */
-	protected int $width;
+	const align = 'center';
 
 	/**
 	 * Creates a new facebook util
@@ -118,42 +71,7 @@ class FacebookUtil {
 	 * @param string $stroke The stroke
 	 * @param string $align The align
 	 */
-	function __construct(RouterInterface $router, string $cache = '../var/cache', string $path = './bundles/rapsyspack', string $prefix = 'facebook', ?string $source = null, array $fonts = [ 'default' => 'ttf/default.ttf' ], string $font = 'default', int $size = 60, int $width = 15, string $fill = 'white', string $stroke = '#00c3f9', string $align = 'center') {
-		//Set align
-		$this->align = $align;
-
-		//Set cache
-		$this->cache = $cache.'/'.$prefix;
-
-		//Set fill
-		$this->fill = $fill;
-
-		//Set font
-		$this->font = $font;
-
-		//Set fonts
-		$this->fonts = $fonts;
-
-		//Set path
-		$this->path = $path.'/'.$prefix;
-
-		//Set prefix key
-		$this->prefix = $prefix;
-
-		//Set router
-		$this->router = $router;
-
-		//Set size
-		$this->size = $size;
-
-		//Set source
-		$this->source = $source;
-
-		//Set stroke
-		$this->stroke = $stroke;
-
-		//Set width
-		$this->width = $width;
+	function __construct(protected RouterInterface $router, protected string $cache = '../var/cache', protected string $path = './bundles/rapsyspack', protected string $prefix = 'facebook', protected ?string $source = null, protected array $fonts = self::fonts, protected string $font = self::font, protected int $size = self::size, protected int $width = self::width, protected string $fill = self::fill, protected string $stroke = self::stroke, protected string $align = self::align) {
 	}
 
 	/**
@@ -181,7 +99,7 @@ class FacebookUtil {
 		}
 
 		//Set path file
-		$path = $this->path.$pathInfo.'.jpeg';
+		$path = $this->path.'/'.$this->prefix.$pathInfo.'.jpeg';
 
 		//Without existing path
 		if (!is_dir($dir = dirname($path))) {
@@ -212,7 +130,7 @@ class FacebookUtil {
 		}
 
 		//Set cache path
-		$cache = $this->cache.$pathInfo.'.png';
+		$cache = $this->cache.'/'.$this->prefix.$pathInfo.'.png';
 
 		//Without cache path
 		if (!is_dir($dir = dirname($cache))) {
