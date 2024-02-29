@@ -174,7 +174,7 @@ class SluggerUtil {
 		}
 
 		//Send result
-		return str_replace(['+','/'], ['-','_'], base64_encode($ret));
+		return str_replace(['+','/','='], ['-','_',''], base64_encode($ret));
 	}
 
 	/**
