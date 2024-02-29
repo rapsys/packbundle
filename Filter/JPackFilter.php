@@ -18,46 +18,25 @@ use Twig\Source;
  * {@inheritdoc}
  */
 class JPackFilter implements FilterInterface {
-	//Default bin
-	private $bin;
-
-	//Default compress type
-	private $compress;
-
-	//Twig template filename
-	private $fileName;
-
-	//Twig template line
-	private $line;
-
 	/**
 	 * Setup jpack filter
 	 *
 	 * @xxx compress can be clean, shrink, obfuscate or best
 	 */
-	public function __construct(Source $fileName, int $line, string $bin = 'jpack', string $compress = 'best') {
-		//Set fileName
-		$this->fileName = $fileName;
-
-		//Set line
-		$this->line = $line;
-
-		//Set bin
-		$this->bin = $bin;
-
-		//Set compress
-		$this->compress = $compress;
-
+	public function __construct(protected Source $fileName, protected int $line, protected string $bin = 'jpack', protected string $compress = 'best') {
 		//Deal with compress
 		if (!empty($this->compress)) {
 			//Append clean parameter
 			if ($this->compress == 'clean') {
+				//TODO: protect binary call by converting bin to array ?
 				$this->bin .= ' --clean';
 			//Append shrink parameter
 			} elseif ($this->compress == 'shrink') {
+				//TODO: protect binary call by converting bin to array ?
 				$this->bin .= ' --shrink';
 			//Append obfuscate parameter
 			} elseif ($this->compress == 'obfuscate') {
+				//TODO: protect binary call by converting bin to array ?
 				$this->bin .= ' --obfuscate';
 			//Unknown compress type
 			//XXX: default compression is best

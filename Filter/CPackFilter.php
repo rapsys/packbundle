@@ -18,40 +18,17 @@ use Twig\Source;
  * {@inheritdoc}
  */
 class CPackFilter implements FilterInterface {
-	//Default bin
-	private $bin;
-
-	//Default compress type
-	private $compress;
-
-	//Twig template filename
-	private $fileName;
-
-	//Twig template line
-	private $line;
-
 	/**
 	 * Setup cpack filter
 	 *
 	 * @xxx compress can be minify or pretty
 	 */
-	public function __construct(Source $fileName, int $line, string $bin = 'cpack', string $compress = 'minify') {
-		//Set fileName
-		$this->fileName = $fileName;
-
-		//Set line
-		$this->line = $line;
-
-		//Set bin
-		$this->bin = $bin;
-
-		//Set compress
-		$this->compress = $compress;
-
+	public function __construct(protected Source $fileName, protected int $line, protected string $bin = 'cpack', protected string $compress = 'minify') {
 		//Deal with compress
 		if (!empty($this->compress)) {
 			//Append minify parameter
 			if ($this->compress == 'minify') {
+				//TODO: protect binary call by converting bin to array ?
 				$this->bin .= ' --minify';
 			//Unknown compress type
 			//XXX: default compression is pretty
