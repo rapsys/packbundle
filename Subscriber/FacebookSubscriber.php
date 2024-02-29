@@ -20,24 +20,13 @@ use Symfony\Component\Routing\RouterInterface;
  * {@inheritdoc}
  */
 class FacebookSubscriber implements EventSubscriberInterface {
-	///Supported locales array
-	private $locales;
-
-	///Router instance
-	private $router;
-
 	/*
 	 * Inject router interface and locales
 	 *
 	 * @param RouterInterface $router The router instance
 	 * @param array $locales The supported locales
 	 */
-	public function __construct(RouterInterface $router, array $locales) {
-		//Set locales
-		$this->locales = $locales;
-
-		//Set router
-		$this->router = $router;
+	public function __construct(protected RouterInterface $router, protected array $locales) {
 	}
 
 	/**
