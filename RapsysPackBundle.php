@@ -11,13 +11,23 @@
 
 namespace Rapsys\PackBundle;
 
-use Symfony\Component\DependencyInjection\Container;
+use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
+
+use Rapsys\PackBundle\DependencyInjection\RapsysPackExtension;
 
 /**
  * {@inheritdoc}
  */
 class RapsysPackBundle extends Bundle {
+	/**
+	 * {@inheritdoc}
+	 */
+	public function getContainerExtension(): ?ExtensionInterface {
+		//Return created container extension
+		return $this->createContainerExtension();
+	}
+
 	/**
 	 * Return bundle alias
 	 *
@@ -43,8 +53,8 @@ class RapsysPackBundle extends Bundle {
 			$bpos = strlen(static::class) - $npos;
 		}
 
-		//Return underscored lowercase bundle alias
-		return Container::underscore(substr(static::class, $npos, $bpos));
+		//Return lowercase bundle alias
+		return strtolower(substr(static::class, $npos, $bpos));
 	}
 
 	/**
@@ -54,6 +64,6 @@ class RapsysPackBundle extends Bundle {
 	 */
 	public static function getVersion(): string {
 		//Return version
-		return '0.2.5';
+		return '0.4.0';
 	}
 }
