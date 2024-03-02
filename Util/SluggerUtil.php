@@ -38,45 +38,20 @@ class SluggerUtil {
 	/**
 	 * Construct slugger util
 	 *
-	 * TODO: use a recipe to generate in .env.local an env variable RAPSYSPACK_SECRET="ayl[...]z9w"
+	 * @description Run "php bin/console rapsyspack:range" to generate RAPSYSPACK_RANGE="ayl[...]z9w" range in .env.local
 	 *
-	 * @todo Add a command to generate alpha array or generate it on first run with cache storage ?
-	 * @todo Use Cache like in calendar controller through FilesystemAdapter
+	 * @todo Use Cache like in calendar controller through FilesystemAdapter ?
 	 *
+	 * @param string $range The shuffled range string
 	 * @param string $secret The secret string
 	 */
-	public function __construct(protected string $secret) {
+	public function __construct(protected string $range, protected string $secret) {
 		/**
-		 * Pseudo-random alphabet
-		 * @xxx use array flip and keys to workaround php "smart" that cast range('0', '9') as int instead of string
-		 * @xxx The key count mismatch, count(alpha)>count(rev), resulted in a data corruption due to duplicate numeric values
-		 * @todosee required range by json_encode result and short input (0->255 ???)
+		 * Get pseuto-random alphabet by splitting range string
+		 * TODO: see required range by json_encode result and short input (0->255 ???)
+		 * XXX: The key count mismatch, count(alpha)>count(rev), resulted in a data corruption due to duplicate numeric values
 		 */
-		$this->alpha = array_keys(array_flip(array_merge(
-			range('^', '[', -1),
-			range('V', 'Z'),
-			range('9', '7', -1),
-			range('L', 'O'),
-			range('f', 'a', -1),
-			range('_', '`'),
-			range('3', '0', -1),
-			range('E', 'H'),
-			range('v', 'r', -1),
-			range('+', '/'),
-			range('K', 'I', -1),
-			range('g', 'j'),
-			range('=', ':', -1),
-			range('>', '@'),
-			range('m', 'k', -1),
-			range('4', '6'),
-			range('*', '%', -1),
-			range('n', 'q'),
-			range('U', 'P', -1),
-			range(' ', '$'),
-			range('D', 'A', -1),
-			range('w', 'z'),
-			range('~', '!', -1)
-		)));
+		$this->alpha = str_split($this->range);
 
 		//Init rev array
 		$this->count = count($rev = $this->rev = array_flip($this->alpha));
