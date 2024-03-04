@@ -25,6 +25,8 @@ use Twig\Source;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 class TokenParser extends AbstractTokenParser {
 	/**
 	 * The stream context instance
@@ -36,25 +38,20 @@ class TokenParser extends AbstractTokenParser {
 	 *
 	 * @param FileLocator $locator The FileLocator instance
 	 * @param PackageInterface $package The Assets Package instance
-	 * @param array $config The config path
+	 * @param string $token The token name
 	 * @param string $tag The tag name
 	 * @param string $output The default output string
-	 * @param array $filters The default filters array
+	 * @param array $filters The default filter array
 	 */
-	//TODO: change config to name and get other values from RAPSYSPACK_REDIRECT, RAPSYSPACK_SCHEME, RAPSYSPACK_TIMEOUT, RAPSYSPACK_AGENT env variables ?
-	public function __construct(protected FileLocator $locator, protected PackageInterface $package, protected array $config, protected string $tag, protected string $output, protected array $filters) {
+	public function __construct(protected FileLocator $locator, protected PackageInterface $package, protected string $token, protected string $tag, protected string $output, protected array $filters) {
 		//Set ctx
 		$this->ctx = stream_context_create(
 			[
 				'http' => [
 					#'header' => ['Referer: https://www.openstreetmap.org/'],
-					//TODO: set as bundle env config
-					'max_redirects' => $config['redirect']?:5,
-					//TODO: set as bundle env config
-					'timeout' => $config['timeout']?:(int)ini_get('default_socket_timeout'),
-					#'user_agent' => 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/93.0.4577.63 Safari/537.36',
-					//TODO: set as bundle env config
-					'user_agent' => $config['agent']?:(string)ini_get('user_agent')?:'rapsys_pack/2.0.0',
+					'max_redirects' => $_ENV['RAPSYSPACK_REDIRECT'] ?? 20,
+					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (int)ini_get('default_socket_timeout') ?: 60,
+					'user_agent' => $_ENV['RAPSYSPACK_AGENT'] ?? (($agent = ini_get('user_agent')) !== false && $agent !== "" ? (string)$agent : RapsysPackBundle::getAlias().'/'.RapsysPackBundle::getVersion())
 				]
 			]
 		);
@@ -80,14 +77,16 @@ class TokenParser extends AbstractTokenParser {
 	 * @return Node The PackNode
 	 */
 	public function parse(Token $token): Node {
+		//Get parser
 		$parser = $this->parser;
+
+		//Get parser stream
 		$stream = $this->parser->getStream();
 
+		//Set inputs array
 		$inputs = [];
-		$name = $this->config['name'];
-		$output = $this->output;
-		$filters = $this->filters;
 
+		//Set content
 		$content = '';
 
 		//Process the token block until end
@@ -101,19 +100,19 @@ class TokenParser extends AbstractTokenParser {
 				//filter='yui_js'
 				$stream->next();
 				$stream->expect(Token::OPERATOR_TYPE, '=');
-				$filters = array_merge($filters, array_filter(array_map('trim', explode(',', $stream->expect(Token::STRING_TYPE)->getValue()))));
+				$this->filters = array_merge($this->filters, array_filter(array_map('trim', explode(',', $stream->expect(Token::STRING_TYPE)->getValue()))));
 			//The output token
 			} elseif ($stream->test(Token::NAME_TYPE, 'output')) {
 				//output='js/packed/*.js' OR output='js/core.js'
 				$stream->next();
 				$stream->expect(Token::OPERATOR_TYPE, '=');
-				$output = $stream->expect(Token::STRING_TYPE)->getValue();
-			//The name token
-			} elseif ($stream->test(Token::NAME_TYPE, 'name')) {
+				$this->output = $stream->expect(Token::STRING_TYPE)->getValue();
+			//The token name
+			} elseif ($stream->test(Token::NAME_TYPE, 'token')) {
 				//name='core_js'
 				$stream->next();
 				$stream->expect(Token::OPERATOR_TYPE, '=');
-				$name = $stream->expect(Token::STRING_TYPE)->getValue();
+				$this->token = $stream->expect(Token::STRING_TYPE)->getValue();
 			//Unexpected token
 			} else {
 				$token = $stream->getCurrent();
@@ -131,9 +130,9 @@ class TokenParser extends AbstractTokenParser {
 		$stream->expect(Token::BLOCK_END_TYPE);
 
 		//Replace star with sha1
-		if (($pos = strpos($output, '*')) !== false) {
-			//XXX: assetic use substr(sha1(serialize($inputs).serialize($filters).serialize($options)), 0, 7)
-			$output = substr($output, 0, $pos).sha1(serialize($inputs).serialize($filters)).substr($output, $pos + 1);
+		if (($pos = strpos($this->output, '*')) !== false) {
+			//XXX: assetic use substr(sha1(serialize($inputs).serialize($this->filters).serialize($this->output)), 0, 7)
+			$this->output = substr($this->output, 0, $pos).sha1(serialize($inputs).serialize($this->filters)).substr($this->output, $pos + 1);
 		}
 
 		//Process inputs
@@ -141,8 +140,7 @@ class TokenParser extends AbstractTokenParser {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
 				//Fix url
-				//TODO: set as bundle env config
-				$inputs[$k] = $this->config['scheme'].substr($inputs[$k], 2);
+				$inputs[$k] = ($_ENV['RAPSYSPACK_SCHEME'] ?? 'https://').substr($inputs[$k], 2);
 			//Deal with non url path
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
@@ -194,9 +192,9 @@ class TokenParser extends AbstractTokenParser {
 		}
 
 		//Check filters
-		if (!empty($filters)) {
+		if (!empty($this->filters)) {
 			//Apply all filters
-			foreach($filters as $filter) {
+			foreach($this->filters as $filter) {
 				//Init args
 				$args = [$stream->getSourceContext(), $token->getLine()];
 				//Check if args is available
@@ -221,21 +219,21 @@ class TokenParser extends AbstractTokenParser {
 
 		//Retrieve asset uri
 		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsys_pack.output.(css,img,js)
-		if (($outputUrl = $this->package->getUrl($output)) === false) {
-			throw new Error(sprintf('Unable to get url for asset: %s', $output), $token->getLine(), $stream->getSourceContext());
+		if (($outputUrl = $this->package->getUrl($this->output)) === false) {
+			throw new Error(sprintf('Unable to get url for asset: %s', $this->output), $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Check if we have a bundle path
-		if ($output[0] == '@') {
+		if ($this->output[0] == '@') {
 			//Resolve it
-			$output = $this->getLocated($output, $token->getLine(), $stream->getSourceContext());
+			$this->output = $this->getLocated($this->output, $token->getLine(), $stream->getSourceContext());
 		}
 
 		//Get filesystem
 		$filesystem = new Filesystem();
 
 		//Create output dir if not present
-		if (!is_dir($dir = dirname($output))) {
+		if (!is_dir($dir = dirname($this->output))) {
 			try {
 				//Create dir
 				//XXX: set as 0775, symfony umask (0022) will reduce rights (0755)
@@ -251,14 +249,14 @@ class TokenParser extends AbstractTokenParser {
 			//Write content to file
 			//XXX: this call is (maybe) atomic
 			//XXX: see https://symfony.com/doc/current/components/filesystem.html#dumpfile
-			$filesystem->dumpFile($output, $content);
+			$filesystem->dumpFile($this->output, $content);
 		} catch (IOExceptionInterface $e) {
 			//Throw error
-			throw new Error(sprintf('Unable to write to: %s', $output), $token->getLine(), $stream->getSourceContext(), $e);
+			throw new Error(sprintf('Unable to write to: %s', $this->output), $token->getLine(), $stream->getSourceContext(), $e);
 		}
 
 		//Set name in context key
-		$ref = new AssignNameExpression($name, $token->getLine());
+		$ref = new AssignNameExpression($this->token, $token->getLine());
 
 		//Set output in context value
 		$value = new TextNode($outputUrl, $token->getLine());
