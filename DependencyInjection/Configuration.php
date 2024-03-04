@@ -38,20 +38,6 @@ class Configuration implements ConfigurationInterface {
 
 		//The bundle default values
 		$defaults = [
-			'config' => [
-				'name' => 'asset_url',
-				'scheme' => 'https://',
-				'timeout' => (int)ini_get('default_socket_timeout'),
-				'agent' => $alias.'/'.($version = RapsysPackBundle::getVersion()),
-				'redirect' => 5
-			],
-			#TODO: migrate to public.path, public.url and router->generateUrl ?
-			#XXX: that would means dropping the PathPackage stuff and use static route like rapsys_pack_facebook
-			'output' => [
-				'css' => '@RapsysPack/css/*.pack.css',
-				'js' =>  '@RapsysPack/js/*.pack.js',
-				'img' => '@RapsysPack/img/*.pack.jpg'
-			],
 			'filters' => [
 				'css' => [
 					0 => [
@@ -62,6 +48,12 @@ class Configuration implements ConfigurationInterface {
 						]
 					]
 				],
+				'img' => [
+					0 => [
+						'class' => 'Rapsys\PackBundle\Filter\IPackFilter',
+						'args' => []
+					]
+				],
 				'js' => [
 					0 => [
 						'class' => 'Rapsys\PackBundle\Filter\JPackFilter',
@@ -70,15 +62,17 @@ class Configuration implements ConfigurationInterface {
 							'best'
 						]
 					]
-				],
-				'img' => [
-					0 => [
-						'class' => 'Rapsys\PackBundle\Filter\IPackFilter',
-						'args' => []
-					]
-				],
+				]
+			],
+			#TODO: migrate to public.path, public.url and router->generateUrl ?
+			#XXX: that would means dropping the PathPackage stuff and use static route like rapsys_pack_facebook
+			'output' => [
+				'css' => '@RapsysPack/css/*.pack.css',
+				'img' => '@RapsysPack/img/*.pack.jpg',
+				'js' =>  '@RapsysPack/js/*.pack.js'
 			],
 			'path' => dirname(__DIR__).'/Resources/public',
+			'token' => 'asset_url'
 		];
 
 		/**
@@ -96,24 +90,6 @@ class Configuration implements ConfigurationInterface {
 			->getRootNode()
 				->addDefaultsIfNotSet()
 				->children()
-					->arrayNode('config')
-						->addDefaultsIfNotSet()
-						->children()
-							->scalarNode('name')->cannotBeEmpty()->defaultValue($defaults['config']['name'])->end()
-							->scalarNode('scheme')->cannotBeEmpty()->defaultValue($defaults['config']['scheme'])->end()
-							->integerNode('timeout')->min(0)->max(300)->defaultValue($defaults['config']['timeout'])->end()
-							->scalarNode('agent')->cannotBeEmpty()->defaultValue($defaults['config']['agent'])->end()
-							->integerNode('redirect')->min(1)->max(30)->defaultValue($defaults['config']['redirect'])->end()
-						->end()
-					->end()
-					->arrayNode('output')
-						->addDefaultsIfNotSet()
-						->children()
-							->scalarNode('css')->cannotBeEmpty()->defaultValue($defaults['output']['css'])->end()
-							->scalarNode('js')->cannotBeEmpty()->defaultValue($defaults['output']['js'])->end()
-							->scalarNode('img')->cannotBeEmpty()->defaultValue($defaults['output']['img'])->end()
-						->end()
-					->end()
 					->arrayNode('filters')
 						->addDefaultsIfNotSet()
 						->children()
@@ -135,28 +111,6 @@ class Configuration implements ConfigurationInterface {
 											//->isRequired()
 											->treatNullLike([])
 											->defaultValue($defaults['filters']['css'][0]['args'])
-											->scalarPrototype()->end()
-										->end()
-									->end()
-								->end()
-							->end()
-							->arrayNode('js')
-								/**
-								 * Undocumented
-								 *
-								 * @see Symfony/Component/Config/Definition/Builder/ArrayNodeDefinition.php +513
-								 */
-								->addDefaultChildrenIfNoneSet()
-								->arrayPrototype()
-									->children()
-										->scalarNode('class')
-											->isRequired()
-											->cannotBeEmpty()
-											->defaultValue($defaults['filters']['js'][0]['class'])
-										->end()
-										->arrayNode('args')
-											->treatNullLike([])
-											->defaultValue($defaults['filters']['js'][0]['args'])
 											->scalarPrototype()->end()
 										->end()
 									->end()
@@ -184,9 +138,40 @@ class Configuration implements ConfigurationInterface {
 									->end()
 								->end()
 							->end()
+							->arrayNode('js')
+								/**
+								 * Undocumented
+								 *
+								 * @see Symfony/Component/Config/Definition/Builder/ArrayNodeDefinition.php +513
+								 */
+								->addDefaultChildrenIfNoneSet()
+								->arrayPrototype()
+									->children()
+										->scalarNode('class')
+											->isRequired()
+											->cannotBeEmpty()
+											->defaultValue($defaults['filters']['js'][0]['class'])
+										->end()
+										->arrayNode('args')
+											->treatNullLike([])
+											->defaultValue($defaults['filters']['js'][0]['args'])
+											->scalarPrototype()->end()
+										->end()
+									->end()
+								->end()
+							->end()
+						->end()
+					->end()
+					->arrayNode('output')
+						->addDefaultsIfNotSet()
+						->children()
+							->scalarNode('css')->cannotBeEmpty()->defaultValue($defaults['output']['css'])->end()
+							->scalarNode('img')->cannotBeEmpty()->defaultValue($defaults['output']['img'])->end()
+							->scalarNode('js')->cannotBeEmpty()->defaultValue($defaults['output']['js'])->end()
 						->end()
 					->end()
 					->scalarNode('path')->cannotBeEmpty()->defaultValue($defaults['path'])->end()
+					->scalarNode('token')->cannotBeEmpty()->defaultValue($defaults['token'])->end()
 				->end()
 			->end();
 
