@@ -26,9 +26,9 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  */
 class PackExtension extends AbstractExtension {
 	/**
-	 * The config array
+	 * The filters array
 	 */
-	protected array $config;
+	protected array $filters;
 
 	/**
 	 * The output array
@@ -36,9 +36,9 @@ class PackExtension extends AbstractExtension {
 	protected array $output;
 
 	/**
-	 * The filter array
+	 * The token string
 	 */
-	protected array $filters;
+	protected string $token;
 
 	/**
 	 * @link https://twig.symfony.com/doc/2.x/advanced.html
@@ -47,29 +47,29 @@ class PackExtension extends AbstractExtension {
 	 */
 	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger) {
 		//Retrieve bundle config
-		if ($parameters = $container->getParameter(self::getAlias())) {
-			//Set config, output and filters arrays
-			foreach(['config', 'output', 'filters'] as $k) {
+		if ($parameters = $container->getParameter(RapsysPackBundle::getAlias())) {
+			//Set filters, output arrays and token string
+			foreach(['filters', 'output', 'token'] as $k) {
 				$this->$k = $parameters[$k];
 			}
 		}
 	}
 
 	/**
-	 * Returns a list of filters to add to the existing list.
+	 * Returns a filter array to add to the existing list.
 	 *
 	 * @return \Twig\TwigFilter[]
 	 */
 	public function getTokenParsers(): array {
 		return [
-			new TokenParser($this->locator, $this->package, $this->config, 'stylesheet', $this->output['css'], $this->filters['css']),
-			new TokenParser($this->locator, $this->package, $this->config, 'javascript', $this->output['js'], $this->filters['js']),
-			new TokenParser($this->locator, $this->package, $this->config, 'image', $this->output['img'], $this->filters['img'])
+			new TokenParser($this->locator, $this->package, $this->token, 'stylesheet', $this->output['css'], $this->filters['css']),
+			new TokenParser($this->locator, $this->package, $this->token, 'javascript', $this->output['js'], $this->filters['js']),
+			new TokenParser($this->locator, $this->package, $this->token, 'image', $this->output['img'], $this->filters['img'])
 		];
 	}
 
 	/**
-	 * Returns a list of filters to add to the existing list.
+	 * Returns a filter array to add to the existing list.
 	 *
 	 * @return \Twig\TwigFilter[]
 	 */
@@ -88,12 +88,5 @@ class PackExtension extends AbstractExtension {
 			new \Twig\TwigFilter('base64_encode', 'base64_encode'),
 			new \Twig\TwigFilter('base64_decode', 'base64_decode')
 		];
-	}
-
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getAlias(): string {
-		return RapsysPackBundle::getAlias();
 	}
 }
