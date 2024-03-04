@@ -40,7 +40,7 @@ class RangeCommand extends Command {
 	/**
 	 * {@inheritdoc}
 	 */
-	public function __construct(protected ?string $name = null, protected string $file = '.env.local') {
+	public function __construct(protected string $file = '.env.local', protected ?string $name = null) {
 		//Call parent constructor
 		parent::__construct($this->name);
 
