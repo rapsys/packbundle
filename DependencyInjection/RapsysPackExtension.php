@@ -34,23 +34,25 @@ class RapsysPackExtension extends Extension {
 		//Process the configuration to get merged config
 		$config = $this->processConfiguration($configuration, $configs);
 
+		//Set bundle alias
+		$alias = RapsysPackBundle::getAlias();
+
 		//Detect when no user configuration is provided
 		if ($configs === [[]]) {
 			//Prepend default config
-			$container->prependExtensionConfig(self::getAlias(), $config);
+			$container->prependExtensionConfig($alias, $config);
 		}
 
 		//Save configuration in parameters
-		$container->setParameter(self::getAlias(), $config);
+		$container->setParameter($alias, $config);
+
+		//Set rapsys_pack.alias key
+		$container->setParameter($alias.'.alias', $alias);
 
 		//Set rapsys_pack.path key
-		$container->setParameter(self::getAlias().'.path', $config['path']);
-	}
+		$container->setParameter($alias.'.path', $config['path']);
 
-	/**
-	 * {@inheritdoc}
-	 */
-	public function getAlias(): string {
-		return RapsysPackBundle::getAlias();
+		//Set rapsys_pack.version key
+		$container->setParameter($alias.'.version', RapsysPackBundle::getVersion());
 	}
 }
