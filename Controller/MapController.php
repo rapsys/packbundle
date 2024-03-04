@@ -54,7 +54,7 @@ class MapController extends AbstractController implements ServiceSubscriberInter
 				'http' => [
 					#'header' => ['Referer: https://www.openstreetmap.org/'],
 					'max_redirects' => $_ENV['RAPSYSPACK_REDIRECT'] ?? 20,
-					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (int)ini_get('default_socket_timeout') ?: 60,
+					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (($timeout = ini_get('default_socket_timeout')) !== false && $timeout !== "" ? (float)$timeout : 60),
 					'user_agent' => $_ENV['RAPSYSPACK_AGENT'] ?? (($agent = ini_get('user_agent')) !== false && $agent !== "" ? (string)$agent : RapsysPackBundle::getAlias().'/'.RapsysPackBundle::getVersion())
 				]
 			]
