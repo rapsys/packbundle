@@ -45,7 +45,7 @@ services:
     # Register twig pack extension
     rapsyspack.pack_extension:
         class: 'Rapsys\PackBundle\Extension\PackExtension'
-        arguments: [ '@service_container', '@rapsyspack.intl_util', '@file_locator', '@rapsyspack.path_package', '@rapsyspack.slugger_util' ]
+        arguments: [ '@rapsyspack.intl_util', '@file_locator', '@rapsyspack.path_package', '@rapsyspack.slugger_util', '%rapsyspack%' ]
         tags: [ 'twig.extension' ]
     # Register assets pack package
     rapsyspack.path_package:
