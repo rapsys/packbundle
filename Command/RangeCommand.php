@@ -18,9 +18,9 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Rapsys\PackBundle\Command;
 
 /**
- * Shuffle printable character range
- *
  * {@inheritdoc}
+ *
+ * Shuffle printable character range
  */
 class RangeCommand extends Command {
 	/**
@@ -49,9 +49,9 @@ class RangeCommand extends Command {
 	}
 
 	/**
-	 * Output a shuffled printable characters range
-	 *
 	 * {@inheritdoc}
+	 *
+	 * Output a shuffled printable characters range
 	 */
 	protected function execute(InputInterface $input, OutputInterface $output): int {
 		//Printable character range

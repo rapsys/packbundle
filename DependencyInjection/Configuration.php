@@ -19,11 +19,11 @@ use Symfony\Component\Process\ExecutableFinder;
 use Rapsys\PackBundle\RapsysPackBundle;
 
 /**
+ * {@inheritdoc}
+ *
  * This is the class that validates and merges configuration from your app/config files.
  *
  * @link http://symfony.com/doc/current/cookbook/bundles/configuration.html
- *
- * {@inheritdoc}
  */
 class Configuration implements ConfigurationInterface {
 	/**

@@ -26,9 +26,9 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  */
 class PackExtension extends AbstractExtension {
 	/**
-	 * @link https://twig.symfony.com/doc/2.x/advanced.html
-	 *
 	 * {@inheritdoc}
+	 *
+	 * @link https://twig.symfony.com/doc/2.x/advanced.html
 	 */
 	public function __construct(protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger, protected array $parameters) {
 	}

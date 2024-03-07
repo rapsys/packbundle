@@ -40,9 +40,9 @@ class CaptchaType extends AbstractType {
 	}
 
 	/**
-	 * Build form
-	 *
 	 * {@inheritdoc}
+	 *
+	 * Build form
 	 */
 	public function buildForm(FormBuilderInterface $builder, array $options): void {
 		//Set captcha

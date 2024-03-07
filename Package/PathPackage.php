@@ -57,6 +57,8 @@ class PathPackage extends Package {
 	}
 
 	/**
+	 * {@inheritdoc}
+	 *
 	 * Returns an absolute or root-relative public path
 	 *
 	 * Transform @BundleBundle to bundle and remove /Resources/public fragment from path
@@ -65,8 +67,6 @@ class PathPackage extends Package {
 	 * @link https://symfony.com/doc/current/bundles.html#overridding-the-bundle-directory-structure
 	 * @see vendor/symfony/framework-bundle/Command/AssetsInstallCommand.php +113
 	 * @see vendor/symfony/framework-bundle/Command/AssetsInstallCommand.php +141
-	 *
-	 * {@inheritdoc}
 	 */
 	public function getUrl(string $path): string {
 		//Match url starting with a bundle name

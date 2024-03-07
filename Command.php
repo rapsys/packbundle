@@ -44,9 +44,9 @@ class Command extends BaseCommand {
 	}
 
 	/**
-	 * Return the command name
-	 *
 	 * {@inheritdoc}
+	 *
+	 * Return the command name
 	 */
 	public function getName(): string {
 		//With namespace
