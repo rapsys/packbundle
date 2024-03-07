@@ -27,6 +27,9 @@ use Twig\TokenParser\AbstractTokenParser;
 
 use Rapsys\PackBundle\RapsysPackBundle;
 
+/**
+ * {@inheritdoc}
+ */
 class TokenParser extends AbstractTokenParser {
 	/**
 	 * The stream context instance
@@ -153,6 +156,7 @@ class TokenParser extends AbstractTokenParser {
 				if (strpos($inputs[$k], '*') !== false || (($a = strpos($inputs[$k], '{')) !== false && ($b = strpos($inputs[$k], ',', $a)) !== false && strpos($inputs[$k], '}', $b) !== false)) {
 					//Get replacement
 					$replacement = glob($inputs[$k], GLOB_NOSORT|GLOB_BRACE);
+
 					//Check that these are working files
 					foreach($replacement as $input) {
 						//Check that it's a file
@@ -160,8 +164,10 @@ class TokenParser extends AbstractTokenParser {
 							throw new Error(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 						}
 					}
+
 					//Replace with glob path
 					array_splice($inputs, $k, 1, $replacement);
+
 					//Fix current key
 					$k += count($replacement) - 1;
 				//Check that it's a file
@@ -179,6 +185,7 @@ class TokenParser extends AbstractTokenParser {
 				if (($data = file_get_contents($input, false, $this->ctx)) === false) {
 					throw new Error(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
 				}
+
 				//Append content
 				$content .= $data;
 			}
@@ -197,17 +204,22 @@ class TokenParser extends AbstractTokenParser {
 			foreach($this->filters as $filter) {
 				//Init args
 				$args = [$stream->getSourceContext(), $token->getLine()];
+
 				//Check if args is available
 				if (!empty($filter['args'])) {
 					//Append args if provided
 					$args += $filter['args'];
 				}
+
 				//Init reflection
 				$reflection = new \ReflectionClass($filter['class']);
+
 				//Set instance args
 				$tool = $reflection->newInstanceArgs($args);
+
 				//Process content
 				$content = $tool->process($content);
+
 				//Remove object
 				unset($tool, $reflection);
 			}
@@ -218,7 +230,7 @@ class TokenParser extends AbstractTokenParser {
 		}
 
 		//Retrieve asset uri
-		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsys_pack.output.(css,img,js)
+		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsyspack.output.(css,img,js)
 		if (($outputUrl = $this->package->getUrl($this->output)) === false) {
 			throw new Error(sprintf('Unable to get url for asset: %s', $this->output), $token->getLine(), $stream->getSourceContext());
 		}
