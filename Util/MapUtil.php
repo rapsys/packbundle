@@ -209,8 +209,8 @@ class MapUtil {
 		//Return array
 		return [
 			'caption' => $caption,
-			'link' => $this->router->generate('rapsys_pack_map', ['hash' => $link, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'zoom' => $zoom + 1, 'width' => $width * 2, 'height' => $height * 2]),
-			'src' => $this->router->generate('rapsys_pack_map', ['hash' => $src, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'zoom' => $zoom, 'width' => $width, 'height' => $height]),
+			'link' => $this->router->generate('rapsyspack_map', ['hash' => $link, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'zoom' => $zoom + 1, 'width' => $width * 2, 'height' => $height * 2]),
+			'src' => $this->router->generate('rapsyspack_map', ['hash' => $src, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'zoom' => $zoom, 'width' => $width, 'height' => $height]),
 			'width' => $width,
 			'height' => $height
 		];
@@ -263,8 +263,8 @@ class MapUtil {
 		//Return array
 		return [
 			'caption' => $caption,
-			'link' => $this->router->generate('rapsys_pack_multimap', ['hash' => $link, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'coordinates' => $coordinate, 'zoom' => $zoom + 1, 'width' => $width * 2, 'height' => $height * 2]),
-			'src' => $this->router->generate('rapsys_pack_multimap', ['hash' => $src, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'coordinates' => $coordinate, 'zoom' => $zoom, 'width' => $width, 'height' => $height]),
+			'link' => $this->router->generate('rapsyspack_multimap', ['hash' => $link, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'coordinates' => $coordinate, 'zoom' => $zoom + 1, 'width' => $width * 2, 'height' => $height * 2]),
+			'src' => $this->router->generate('rapsyspack_multimap', ['hash' => $src, 'updated' => $updated, 'latitude' => $latitude, 'longitude' => $longitude, 'coordinates' => $coordinate, 'zoom' => $zoom, 'width' => $width, 'height' => $height]),
 			'width' => $width,
 			'height' => $height
 		];

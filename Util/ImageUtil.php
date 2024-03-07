@@ -108,7 +108,7 @@ class ImageUtil {
 			'token' => $this->slugger->hash(strval($a * $b + $c)),
 			'value' => strval($a * $b + $c),
 			'equation' => str_replace([' ', '*', '+'], ['-', 'mul', 'add'], $equation),
-			'src' => $this->router->generate('rapsys_pack_captcha', ['hash' => $hash, 'updated' => $updated, 'equation' => $short, 'width' => $width, 'height' => $height]),
+			'src' => $this->router->generate('rapsyspack_captcha', ['hash' => $hash, 'updated' => $updated, 'equation' => $short, 'width' => $width, 'height' => $height]),
 			'width' => $width,
 			'height' => $height
 		];
@@ -140,8 +140,8 @@ class ImageUtil {
 		//Return array
 		return [
 			'caption' => $caption,
-			'link' => $this->router->generate('rapsys_pack_thumb', ['hash' => $link, 'updated' => $updated, 'path' => $short, 'width' => $imageWidth, 'height' => $imageHeight]),
-			'src' => $this->router->generate('rapsys_pack_thumb', ['hash' => $src, 'updated' => $updated, 'path' => $short, 'width' => $width, 'height' => $height]),
+			'link' => $this->router->generate('rapsyspack_thumb', ['hash' => $link, 'updated' => $updated, 'path' => $short, 'width' => $imageWidth, 'height' => $imageHeight]),
+			'src' => $this->router->generate('rapsyspack_thumb', ['hash' => $src, 'updated' => $updated, 'path' => $short, 'width' => $width, 'height' => $height]),
 			'width' => $width,
 			'height' => $height
 		];
