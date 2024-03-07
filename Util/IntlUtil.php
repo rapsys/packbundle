@@ -22,6 +22,7 @@ class IntlUtil {
 	 * Format date
 	 */
 	public function date(Environment $env, \DateTime $date, string $dateFormat = 'medium', string $timeFormat = 'medium', ?string $locale = null, \IntlTimeZone|\DateTimeZone|string|null $timezone = null, ?string $calendar = null, ?string $pattern = null) {
+		//Get converted date
 		$date = twig_date_converter($env, $date, $timezone);
 
 		//Set date and time formatters
@@ -33,6 +34,7 @@ class IntlUtil {
 			'full' => \IntlDateFormatter::FULL,
 		];
 
+		//Get formatter
 		$formatter = \IntlDateFormatter::create(
 			$locale,
 			$formatters[$dateFormat],
@@ -42,6 +44,7 @@ class IntlUtil {
 			$pattern
 		);
 
+		//Return formatted date
 		return $formatter->format($date->getTimestamp());
 	}
 
@@ -49,29 +52,35 @@ class IntlUtil {
 	 * Format number
 	 */
 	public function number(int|float $number, $style = 'decimal', $type = 'default', ?string $locale = null) {
-		static $typeValues = array(
+		//Set types
+		static $types = [
 			'default' => NumberFormatter::TYPE_DEFAULT,
 			'int32' => NumberFormatter::TYPE_INT32,
 			'int64' => NumberFormatter::TYPE_INT64,
 			'double' => NumberFormatter::TYPE_DOUBLE,
 			'currency' => NumberFormatter::TYPE_CURRENCY,
-		);
+		];
 
+		//Get formatter
 		$formatter = $this->getNumberFormatter($locale, $style);
 
-		if (!isset($typeValues[$type])) {
-			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($typeValues))));
+		//Without type
+		if (!isset($types[$type])) {
+			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($types))));
 		}
 
-		return $formatter->format($number, $typeValues[$type]);
+		//Return formatted number
+		return $formatter->format($number, $types[$type]);
 	}
 
 	/**
 	 * Format currency
 	 */
 	public function currency(int|float $number, string $currency, ?string $locale = null) {
+		//Get formatter
 		$formatter = $this->getNumberFormatter($locale, 'currency');
 
+		//Return formatted currency
 		return $formatter->formatCurrency($number, $currency);
 	}
 
