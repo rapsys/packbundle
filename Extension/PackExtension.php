@@ -12,8 +12,8 @@
 namespace Rapsys\PackBundle\Extension;
 
 use Symfony\Component\Asset\PackageInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Config\FileLocator;
+
 use Twig\Extension\AbstractExtension;
 
 use Rapsys\PackBundle\Parser\TokenParser;
@@ -30,7 +30,7 @@ class PackExtension extends AbstractExtension {
 	 *
 	 * {@inheritdoc}
 	 */
-	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger, protected array $parameters) {
+	public function __construct(protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger, protected array $parameters) {
 	}
 
 	/**
