@@ -1,26 +1,26 @@
 #Routes configuration
-rapsys_pack_captcha:
+rapsyspack_captcha:
     path: '/captcha/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{equation<[a-zA-Z0-9=_-]+>}/{width<\d+>?120}/{height<\d+>?36}.{!_format?jpeg}'
     controller: Rapsys\PackBundle\Controller\ImageController::captcha
     methods: GET
 
 #TODO: replace this url with a redirection route ???
 #XXX: we don't need the mtime, maybe we can drop it in this redirect instead of apache ?
-rapsys_pack_facebook:
+rapsyspack_facebook:
     path: '/bundles/rapsyspack/facebook/{mtime<\d+>}{path</.*>}.{!_format?jpeg}'
     methods: GET
 
-rapsys_pack_map:
+rapsyspack_map:
     path: '/map/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{latitude<\d+(\.?\d+)?>}/{longitude<\d+(\.?\d+)?>}/{zoom<\d+>?17}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
     controller: Rapsys\PackBundle\Controller\MapController::map
     methods: GET
 
-rapsys_pack_multimap:
+rapsyspack_multimap:
     path: '/multimap/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{latitude<\d+(\.?\d+)?>}/{longitude<\d+(\.?\d+)?>}/{coordinates<(?:\d+(\.\d+)?,\d+(\.\d+)?(-\d+(\.\d+)?,\d+(\.\d+)?)*)?>}/{zoom<\d+>?15}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
     controller: Rapsys\PackBundle\Controller\MapController::multimap
     methods: GET
 
-rapsys_pack_thumb:
+rapsyspack_thumb:
     path: '/thumb/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{path<[a-zA-Z0-9=_-]+>}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
     controller: Rapsys\PackBundle\Controller\ImageController::thumb
     methods: GET
