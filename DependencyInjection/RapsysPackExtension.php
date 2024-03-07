@@ -55,4 +55,13 @@ class RapsysPackExtension extends Extension {
 		//Set rapsyspack.version key
 		$container->setParameter($alias.'.version', RapsysPackBundle::getVersion());
 	}
+
+	/**
+	 * {@inheritdoc}
+	 *
+	 * @xxx Required by kernel to load renamed alias configuration
+	 */
+	public function getAlias(): string {
+		return RapsysPackBundle::getAlias();
+	}
 }
