@@ -122,7 +122,7 @@ class FacebookUtil {
 
 			//Return image data
 			return [
-				'og:image' => $this->router->generate('rapsys_pack_facebook', ['mtime' => $mtime, 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
+				'og:image' => $this->router->generate('rapsyspack_facebook', ['mtime' => $mtime, 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
 				'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 				'og:image:height' => $height,
 				'og:image:width' => $width
@@ -348,7 +348,7 @@ class FacebookUtil {
 
 		//Return image data
 		return [
-			'og:image' => $this->router->generate('rapsys_pack_facebook', ['mtime' => stat($path)['mtime'], 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
+			'og:image' => $this->router->generate('rapsyspack_facebook', ['mtime' => stat($path)['mtime'], 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
 			'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 			'og:image:height' => $height,
 			'og:image:width' => $width
