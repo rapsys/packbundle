@@ -21,7 +21,7 @@ use Rapsys\PackBundle\RapsysPackBundle;
 /**
  * This is the class that validates and merges configuration from your app/config files.
  *
- * @link http://symfony.com/doc/current/cookbook/bundles/configuration.html}
+ * @link http://symfony.com/doc/current/cookbook/bundles/configuration.html
  *
  * {@inheritdoc}
  */
@@ -65,7 +65,7 @@ class Configuration implements ConfigurationInterface {
 				]
 			],
 			#TODO: migrate to public.path, public.url and router->generateUrl ?
-			#XXX: that would means dropping the PathPackage stuff and use static route like rapsys_pack_facebook
+			#XXX: that would means dropping the PathPackage stuff and use static route like rapsyspack_facebook
 			'output' => [
 				'css' => '@RapsysPack/css/*.pack.css',
 				'img' => '@RapsysPack/img/*.pack.jpg',
@@ -82,8 +82,8 @@ class Configuration implements ConfigurationInterface {
 		 * @link http://symfony.com/doc/current/components/config/definition.html
 		 * @link https://github.com/symfony/assetic-bundle/blob/master/DependencyInjection/Configuration.php#L63
 		 *
-		 * @see php bin/console config:dump-reference rapsys_pack to dump default config
-		 * @see php bin/console debug:config rapsys_pack to dump config
+		 * @see php bin/console config:dump-reference rapsyspack to dump default config
+		 * @see php bin/console debug:config rapsyspack to dump config
 		 */
 		$treeBuilder
 			//Parameters
