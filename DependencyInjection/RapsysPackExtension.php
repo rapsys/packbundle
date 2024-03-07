@@ -46,13 +46,13 @@ class RapsysPackExtension extends Extension {
 		//Save configuration in parameters
 		$container->setParameter($alias, $config);
 
-		//Set rapsys_pack.alias key
+		//Set rapsyspack.alias key
 		$container->setParameter($alias.'.alias', $alias);
 
-		//Set rapsys_pack.path key
+		//Set rapsyspack.path key
 		$container->setParameter($alias.'.path', $config['path']);
 
-		//Set rapsys_pack.version key
+		//Set rapsyspack.version key
 		$container->setParameter($alias.'.version', RapsysPackBundle::getVersion());
 	}
 }
