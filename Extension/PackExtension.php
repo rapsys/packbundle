@@ -26,33 +26,11 @@ use Rapsys\PackBundle\Util\SluggerUtil;
  */
 class PackExtension extends AbstractExtension {
 	/**
-	 * The filters array
-	 */
-	protected array $filters;
-
-	/**
-	 * The output array
-	 */
-	protected array $output;
-
-	/**
-	 * The token string
-	 */
-	protected string $token;
-
-	/**
 	 * @link https://twig.symfony.com/doc/2.x/advanced.html
 	 *
 	 * {@inheritdoc}
 	 */
-	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger) {
-		//Retrieve bundle config
-		if ($parameters = $container->getParameter(RapsysPackBundle::getAlias())) {
-			//Set filters, output arrays and token string
-			foreach(['filters', 'output', 'token'] as $k) {
-				$this->$k = $parameters[$k];
-			}
-		}
+	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger, protected array $parameters) {
 	}
 
 	/**
@@ -62,9 +40,9 @@ class PackExtension extends AbstractExtension {
 	 */
 	public function getTokenParsers(): array {
 		return [
-			new TokenParser($this->locator, $this->package, $this->token, 'stylesheet', $this->output['css'], $this->filters['css']),
-			new TokenParser($this->locator, $this->package, $this->token, 'javascript', $this->output['js'], $this->filters['js']),
-			new TokenParser($this->locator, $this->package, $this->token, 'image', $this->output['img'], $this->filters['img'])
+			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'stylesheet', $this->parameters['output']['css'], $this->parameters['filters']['css']),
+			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'javascript', $this->parameters['output']['js'], $this->parameters['filters']['js']),
+			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'image', $this->parameters['output']['img'], $this->parameters['filters']['img'])
 		];
 	}
 
