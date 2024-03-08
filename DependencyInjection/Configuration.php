@@ -82,8 +82,8 @@ class Configuration implements ConfigurationInterface {
 		 * @link http://symfony.com/doc/current/components/config/definition.html
 		 * @link https://github.com/symfony/assetic-bundle/blob/master/DependencyInjection/Configuration.php#L63
 		 *
-		 * @see php bin/console config:dump-reference rapsyspack to dump default config
-		 * @see php bin/console debug:config rapsyspack to dump config
+		 * @see bin/console config:dump-reference rapsyspack to dump default config
+		 * @see bin/console debug:config rapsyspack to dump config
 		 */
 		$treeBuilder
 			//Parameters

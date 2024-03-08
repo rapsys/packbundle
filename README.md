@@ -202,14 +202,14 @@ Open a command console, enter your project directory and execute the following
 command to see default bundle configuration:
 
 ```console
-$ php bin/console config:dump-reference RapsysPackBundle
+$ bin/console config:dump-reference RapsysPackBundle
 ```
 
 Open a command console, enter your project directory and execute the following
 command to see current bundle configuration:
 
 ```console
-$ php bin/console debug:config RapsysPackBundle
+$ bin/console debug:config RapsysPackBundle
 ```
 
 ### Step 4: Use the twig extension in your Template
