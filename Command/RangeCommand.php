@@ -26,14 +26,14 @@ class RangeCommand extends Command {
 	/**
 	 * Set description
 	 *
-	 * @description Shown with bin/console list
+	 * Shown with bin/console list
 	 */
 	protected string $description = 'Outputs a shuffled printable characters range';
 
 	/**
 	 * Set help
 	 *
-	 * @description Shown with bin/console --help packbundle:range
+	 * Shown with bin/console --help rapsyspack:range
 	 */
 	protected string $help = 'This command outputs a shuffled printable characters range';
 
