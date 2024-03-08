@@ -2,14 +2,12 @@
 parameters:
     # User agent
     env(RAPSYSPACK_AGENT): "rapsyspack/Ch4ng3m3!"
-    # Hostname
-    env(RAPSYSPACK_HOSTNAME): "Ch4ng3m3!"
     # Shuffled printable character range
     env(RAPSYSPACK_RANGE): 'Ch4ng3m3!'
     # Redirect
     env(RAPSYSPACK_REDIRECT): 20
     # Scheme
-    env(RAPSYSPACK_SCHEME): "https://"
+    env(RAPSYSPACK_SCHEME): "https"
     # Timeout
     env(RAPSYSPACK_TIMEOUT): 60
 
