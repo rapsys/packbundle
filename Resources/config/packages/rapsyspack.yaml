@@ -53,7 +53,7 @@ services:
     # Register slugger util service
     rapsyspack.slugger_util:
         class: 'Rapsys\PackBundle\Util\SluggerUtil'
-        arguments: [ '%env(string:RAPSYSPACK_RANGE)%', '%kernel.secret%' ]
+        arguments: [ '%kernel.secret%' ]
         public: true
     # Register range command
     Rapsys\PackBundle\Command\RangeCommand:

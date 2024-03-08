@@ -38,20 +38,25 @@ class SluggerUtil {
 	/**
 	 * Construct slugger util
 	 *
-	 * @description Run "php bin/console rapsyspack:range" to generate RAPSYSPACK_RANGE="ayl[...]z9w" range in .env.local
+	 * Run "bin/console rapsyspack:range" to generate RAPSYSPACK_RANGE="ayl[...]z9w" range in .env.local
 	 *
 	 * @todo Use Cache like in calendar controller through FilesystemAdapter ?
 	 *
-	 * @param string $range The shuffled range string
 	 * @param string $secret The secret string
 	 */
-	public function __construct(protected string $range, protected string $secret) {
+	public function __construct(protected string $secret) {
+		//Without range
+		if (empty($range = $_ENV['RAPSYSPACK_RANGE']) || $range === 'Ch4ng3m3!') {
+			//Protect member variable setup
+			return;
+		}
+
 		/**
 		 * Get pseuto-random alphabet by splitting range string
 		 * TODO: see required range by json_encode result and short input (0->255 ???)
 		 * XXX: The key count mismatch, count(alpha)>count(rev), resulted in a data corruption due to duplicate numeric values
 		 */
-		$this->alpha = str_split($this->range);
+		$this->alpha = str_split($range);
 
 		//Init rev array
 		$this->count = count($rev = $this->rev = array_flip($this->alpha));
@@ -60,6 +65,7 @@ class SluggerUtil {
 		$split = str_split($this->secret);
 
 		//Set offset
+		//TODO: protect undefined index ?
 		$this->offset = array_reduce($split, function ($res, $a) use ($rev) { return $res += $rev[$a]; }, count($split)) % $this->count;
 	}
 
