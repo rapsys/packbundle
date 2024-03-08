@@ -85,6 +85,46 @@ class IntlUtil {
 	}
 
 	/**
+	 * Compute eastern for selected year
+	 *
+	 * @param string $year The eastern year
+	 *
+	 * @return DateTime The eastern date
+	 */
+	public function getEastern(string $year): \DateTime {
+		//Set static results
+		static $results = [];
+
+		//Check if already computed
+		if (isset($results[$year])) {
+			//Return computed eastern
+			return $results[$year];
+		}
+
+		$d = (19 * ($year % 19) + 24) % 30;
+
+		$e = (2 * ($year % 4) + 4 * ($year % 7) + 6 * $d + 5) % 7;
+
+		$day = 22 + $d + $e;
+
+		$month = 3;
+
+		if ($day > 31) {
+			$day = $d + $e - 9;
+			$month = 4;
+		} elseif ($d == 29 && $e == 6) {
+			$day = 10;
+			$month = 4;
+		} elseif ($d == 28 && $e == 6) {
+			$day = 18;
+			$month = 4;
+		}
+
+		//Store eastern in data
+		return ($results[$year] = new \DateTime(sprintf('%04d-%02d-%02d', $year, $month, $day)));
+	}
+
+	/**
 	 * Gets number formatter instance matching locale and style.
 	 *
 	 * @param ?string $locale Locale in which the number would be formatted
