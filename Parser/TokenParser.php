@@ -143,7 +143,7 @@ class TokenParser extends AbstractTokenParser {
 			//Deal with generic url
 			if (strpos($inputs[$k], '//') === 0) {
 				//Fix url
-				$inputs[$k] = ($_ENV['RAPSYSPACK_SCHEME'] ?? 'https://').substr($inputs[$k], 2);
+				$inputs[$k] = ($_ENV['RAPSYSPACK_SCHEME'] ?? 'https').'://'.substr($inputs[$k], 2);
 			//Deal with non url path
 			} elseif (strpos($inputs[$k], '://') === false) {
 				//Check if we have a bundle path
