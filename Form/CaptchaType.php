@@ -14,14 +14,14 @@ namespace Rapsys\PackBundle\Form;
 use Rapsys\PackBundle\Util\ImageUtil;
 use Rapsys\PackBundle\Util\SluggerUtil;
 
-use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
 use Symfony\Component\Form\Extension\Core\Type\IntegerType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\Form\FormEvents;
-use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormError;
+use Symfony\Component\Form\FormEvent;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * Captcha Type class definition
@@ -32,11 +32,11 @@ class CaptchaType extends AbstractType {
 	/**
 	 * Constructor
 	 *
-	 * @param ImageUtil $image
-	 * @param SluggerUtil $slugger
-	 * @param TranslatorInterface $translator The translator instance
+	 * @param ?ImageUtil $image
+	 * @param ?SluggerUtil $slugger
+	 * @param ?TranslatorInterface $translator The translator instance
 	 */
-	public function __construct(protected ImageUtil $image, protected SluggerUtil $slugger, protected TranslatorInterface $translator) {
+	public function __construct(protected ?ImageUtil $image = null, protected ?SluggerUtil $slugger = null, protected ?TranslatorInterface $translator = null) {
 	}
 
 	/**
@@ -45,18 +45,21 @@ class CaptchaType extends AbstractType {
 	 * Build form
 	 */
 	public function buildForm(FormBuilderInterface $builder, array $options): void {
-		//Set captcha
-		$captcha = $this->image->getCaptcha((new \DateTime('-1 year'))->getTimestamp());
+		//With image, slugger and translator
+		if ($this->image !== null && $this->slugger !== null && $this->translator !== null) {
+			//Set captcha
+			$captcha = $this->image->getCaptcha((new \DateTime('-1 year'))->getTimestamp());
 
-		//Add captcha token
-		$builder->add('_captcha_token', HiddenType::class, ['data' => $captcha['token'], 'empty_data' => $captcha['token']]);
+			//Add captcha token
+			$builder->add('_captcha_token', HiddenType::class, ['data' => $captcha['token'], 'empty_data' => $captcha['token'], 'mapped' => false]);
 
-		//Add captcha
-		$builder->add('captcha', IntegerType::class, ['label_attr' => ['class' => 'captcha'], 'label' => '<img src="'.htmlentities($captcha['src']).'" alt="'.htmlentities($captcha['equation']).'" />', 'label_html' => true, 'translation_domain' => false]);
+			//Add captcha
+			$builder->add('captcha', IntegerType::class, ['label_attr' => ['class' => 'captcha'], 'label' => '<img src="'.htmlentities($captcha['src']).'" alt="'.htmlentities($captcha['equation']).'" />', 'label_html' => true, 'mapped' => false, 'translation_domain' => false]);
 
-		//Add event listener on captcha
-		$builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'validateCaptcha']);
-    }
+			//Add event listener on captcha
+			$builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'validateCaptcha']);
+		}
+	}
 
 	/**
 	 * Validate captcha
