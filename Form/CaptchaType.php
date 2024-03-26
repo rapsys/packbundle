@@ -32,8 +32,8 @@ class CaptchaType extends AbstractType {
 	/**
 	 * Constructor
 	 *
-	 * @param ?ImageUtil $image
-	 * @param ?SluggerUtil $slugger
+	 * @param ?ImageUtil $image The image instance
+	 * @param ?SluggerUtil $slugger The slugger instance
 	 * @param ?TranslatorInterface $translator The translator instance
 	 */
 	public function __construct(protected ?ImageUtil $image = null, protected ?SluggerUtil $slugger = null, protected ?TranslatorInterface $translator = null) {
