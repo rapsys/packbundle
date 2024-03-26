@@ -11,10 +11,10 @@
 
 namespace Rapsys\PackBundle;
 
+use Rapsys\PackBundle\DependencyInjection\RapsysPackExtension;
+
 use Symfony\Component\DependencyInjection\Extension\ExtensionInterface;
 use Symfony\Component\HttpKernel\Bundle\Bundle;
-
-use Rapsys\PackBundle\DependencyInjection\RapsysPackExtension;
 
 /**
  * {@inheritdoc}

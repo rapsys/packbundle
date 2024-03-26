@@ -11,15 +11,15 @@
 
 namespace Rapsys\PackBundle\Extension;
 
-use Symfony\Component\Asset\PackageInterface;
-use Symfony\Component\HttpKernel\Config\FileLocator;
-
-use Twig\Extension\AbstractExtension;
-
 use Rapsys\PackBundle\Parser\TokenParser;
 use Rapsys\PackBundle\RapsysPackBundle;
 use Rapsys\PackBundle\Util\IntlUtil;
 use Rapsys\PackBundle\Util\SluggerUtil;
+
+use Symfony\Component\Asset\PackageInterface;
+use Symfony\Component\HttpKernel\Config\FileLocator;
+
+use Twig\Extension\AbstractExtension;
 
 /**
  * {@inheritdoc}

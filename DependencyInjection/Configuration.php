@@ -11,12 +11,12 @@
 
 namespace Rapsys\PackBundle\DependencyInjection;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 use Symfony\Component\Config\Definition\Builder\TreeBuilder;
 use Symfony\Component\Config\Definition\ConfigurationInterface;
 use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\Process\ExecutableFinder;
-
-use Rapsys\PackBundle\RapsysPackBundle;
 
 /**
  * {@inheritdoc}

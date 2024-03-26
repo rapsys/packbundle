@@ -11,10 +11,10 @@
 
 namespace Rapsys\PackBundle;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 use Symfony\Component\Console\Command\Command as BaseCommand;
 use Symfony\Component\DependencyInjection\Container;
-
-use Rapsys\PackBundle\RapsysPackBundle;
 
 /**
  * {@inheritdoc}
@@ -23,7 +23,7 @@ class Command extends BaseCommand {
 	/**
 	 * {@inheritdoc}
 	 */
-    public function __construct(protected ?string $name = null) {
+	public function __construct(protected ?string $name = null) {
 		//Fix name
 		$this->name = $this->name ?? static::getName();
 

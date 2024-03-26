@@ -11,11 +11,11 @@
 
 namespace Rapsys\PackBundle\Package;
 
+use Rapsys\PackBundle\Context\NullContext;
+
 use Symfony\Component\Asset\Context\ContextInterface;
 use Symfony\Component\Asset\Package;
 use Symfony\Component\Asset\VersionStrategy\VersionStrategyInterface;
-
-use Rapsys\PackBundle\Context\NullContext;
 
 /**
  * {@inheritdoc}

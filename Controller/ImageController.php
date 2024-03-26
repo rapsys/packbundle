@@ -11,21 +11,21 @@
 
 namespace Rapsys\PackBundle\Controller;
 
+use Rapsys\PackBundle\Util\ImageUtil;
+use Rapsys\PackBundle\Util\SluggerUtil;
+
 use Psr\Container\ContainerInterface;
 
-use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\RequestContext;
 use Symfony\Contracts\Service\ServiceSubscriberInterface;
-
-use Rapsys\PackBundle\Util\ImageUtil;
-use Rapsys\PackBundle\Util\SluggerUtil;
 
 /**
  * {@inheritdoc}

@@ -11,6 +11,8 @@
 
 namespace Rapsys\PackBundle\Parser;
 
+use Rapsys\PackBundle\RapsysPackBundle;
+
 use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
@@ -24,8 +26,6 @@ use Twig\Node\TextNode;
 use Twig\Source;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
-
-use Rapsys\PackBundle\RapsysPackBundle;
 
 /**
  * {@inheritdoc}
