@@ -21,6 +21,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\Form\FormEvent;
 use Symfony\Component\Form\FormEvents;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
@@ -46,7 +47,7 @@ class CaptchaType extends AbstractType {
 	 */
 	public function buildForm(FormBuilderInterface $builder, array $options): void {
 		//With image, slugger and translator
-		if ($this->image !== null && $this->slugger !== null && $this->translator !== null) {
+		if (!empty($options['captcha']) && $this->image !== null && $this->slugger !== null && $this->translator !== null) {
 			//Set captcha
 			$captcha = $this->image->getCaptcha((new \DateTime('-1 year'))->getTimestamp());
 
@@ -59,6 +60,20 @@ class CaptchaType extends AbstractType {
 			//Add event listener on captcha
 			$builder->addEventListener(FormEvents::PRE_SUBMIT, [$this, 'validateCaptcha']);
 		}
+	}
+
+	/**
+	 * {@inheritdoc}
+	 */
+	public function configureOptions(OptionsResolver $resolver): void {
+		//Call parent configure options
+		parent::configureOptions($resolver);
+
+		//Set defaults
+		$resolver->setDefaults(['captcha' => false]);
+
+		//Add extra captcha option
+		$resolver->setAllowedTypes('captcha', 'boolean');
 	}
 
 	/**
