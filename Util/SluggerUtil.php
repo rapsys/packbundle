@@ -162,7 +162,7 @@ class SluggerUtil {
 	 * Convert string to safe slug
 	 *
 	 * @param string $data The data string
-	 * @param string $separator The separator string 
+	 * @param string $separator The separator string
 	 * @return ?string The slugged data
 	 */
 	function slug(?string $data, string $separator = '-'): ?string {
