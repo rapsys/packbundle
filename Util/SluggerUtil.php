@@ -46,7 +46,7 @@ class SluggerUtil {
 	 */
 	public function __construct(protected string $secret) {
 		//Without range
-		if (empty($range = $_ENV['RAPSYSPACK_RANGE']) || $range === 'Ch4ng3m3!') {
+		if (!isset($_ENV['RAPSYSPACK_RANGE']) || empty($range = $_ENV['RAPSYSPACK_RANGE']) || $range === 'Ch4ng3m3!') {
 			//Protect member variable setup
 			return;
 		}
