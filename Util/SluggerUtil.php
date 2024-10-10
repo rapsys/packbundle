@@ -162,9 +162,10 @@ class SluggerUtil {
 	 * Convert string to safe slug
 	 *
 	 * @param string $data The data string
+	 * @param string $separator The separator string 
 	 * @return ?string The slugged data
 	 */
-	function slug(?string $data): ?string {
+	function slug(?string $data, string $separator = '-'): ?string {
 		//With null
 		if ($data === null) {
 			//Return null
@@ -176,11 +177,11 @@ class SluggerUtil {
 			//Convert from any to latin, then to ascii and lowercase
 			$trans = \Transliterator::create('Any-Latin; Latin-ASCII; Lower()');
 			//Replace every non alphanumeric character by dash then trim dash
-			return trim(preg_replace('/[^a-zA-Z0-9]+/', '-', $trans->transliterate($data)), '-');
+			return trim(preg_replace('/[^a-zA-Z0-9]+/', $separator, $trans->transliterate($data)), $separator);
 		}
 
 		//Convert from utf-8 to ascii, replace quotes with space, remove non alphanumericseparator, replace separator with dash and trim dash
-		return trim(preg_replace('/[\/_|+ -]+/', '-', strtolower(preg_replace('/[^a-zA-Z0-9\/_|+ -]/', '', str_replace(['\'', '"'], ' ', iconv('UTF-8', 'ASCII//TRANSLIT', $data))))), '-');
+		return trim(preg_replace('/[\/_|+ -]+/', $separator, strtolower(preg_replace('/[^a-zA-Z0-9\/_|+ -]/', '', str_replace(['\'', '"'], ' ', iconv('UTF-8', 'ASCII//TRANSLIT', $data))))), $separator);
 	}
 
 	/**
