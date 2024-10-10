@@ -121,6 +121,9 @@ class RangeCommand extends Command {
 
 			//Print shuffled range
 			var_export(implode($shuffles));
+
+			//Add trailing line
+			echo "\n";
 		}
 
 		//Return success
