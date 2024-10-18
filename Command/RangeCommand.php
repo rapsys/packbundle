@@ -12,6 +12,7 @@
 namespace Rapsys\PackBundle\Command;
 
 use Rapsys\PackBundle\Command;
+use Rapsys\PackBundle\RapsysPackBundle;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -97,7 +98,8 @@ class RangeCommand extends Command {
 				$content = preg_replace('/^(RAPSYSPACK_RANGE=.*)$/m', '#$1'."\n".strtr($string, ['\\' => '\\\\', '\\$' => '\\\\$']), $content);
 			//Without match
 			} else {
-				$content .= "\n".$string;
+				//Append string
+				$content .= (strlen($content)?"\n\n":'').'###> '.RapsysPackBundle::getBundleAlias().' ###'."\n".$string."\n".'###< '.RapsysPackBundle::getBundleAlias().' ###';
 			}
 
 			//Write file content
