@@ -78,6 +78,9 @@ class RangeCommand extends Command {
 			$shuffles = array_merge($shuffles, $slices);
 		} while (!empty($ranges));
 
+		//Set string
+		$string = 'RAPSYSPACK_RANGE="'.strtr(implode($shuffles), ['\\' => '\\\\', '"' => '\\"', '$' => '\\$']).'"';
+
 		//With writeable file
 		if (is_file($file = $input->getArgument('file')) && is_writeable($file)) {
 			//Get file content
@@ -88,9 +91,6 @@ class RangeCommand extends Command {
 				//Return failure
 				return self::FAILURE;
 			}
-
-			//Set string
-			$string = 'RAPSYSPACK_RANGE="'.strtr(implode($shuffles), ['\\' => '\\\\', '"' => '\\"', '$' => '\\$']).'"';
 
 			//With match
 			if (preg_match('/^RAPSYSPACK_RANGE=.*$/m', $content, $matches, PREG_OFFSET_CAPTURE)) {
@@ -116,13 +116,10 @@ class RangeCommand extends Command {
 		//Without writeable file
 		} else {
 			//Print instruction
-			echo '# Set in '.$file."\n";
+			echo '# Add to '.$file."\n";
 
 			//Print rapsys pack range variable
-			echo 'RAPSYSPACK_RANGE=';
-
-			//Print shuffled range
-			var_export(implode($shuffles));
+			echo '###> '.RapsysPackBundle::getBundleAlias().' ###'."\n".$string."\n".'###< '.RapsysPackBundle::getBundleAlias().' ###';
 
 			//Add trailing line
 			echo "\n";
