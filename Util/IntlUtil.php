@@ -19,6 +19,17 @@ use Twig\Environment;
  */
 class IntlUtil {
 	/**
+	 * Format currency
+	 */
+	public function currency(int|float $number, string $currency, ?string $locale = null) {
+		//Get formatter
+		$formatter = $this->getNumberFormatter($locale, 'currency');
+
+		//Return formatted currency
+		return $formatter->formatCurrency($number, $currency);
+	}
+
+	/**
 	 * Format date
 	 */
 	public function date(Environment $env, \DateTime $date, string $dateFormat = 'medium', string $timeFormat = 'medium', ?string $locale = null, \IntlTimeZone|\DateTimeZone|string|null $timezone = null, ?string $calendar = null, ?string $pattern = null) {
@@ -46,42 +57,6 @@ class IntlUtil {
 
 		//Return formatted date
 		return $formatter->format($date->getTimestamp());
-	}
-
-	/**
-	 * Format number
-	 */
-	public function number(int|float $number, $style = 'decimal', $type = 'default', ?string $locale = null) {
-		//Set types
-		static $types = [
-			'default' => NumberFormatter::TYPE_DEFAULT,
-			'int32' => NumberFormatter::TYPE_INT32,
-			'int64' => NumberFormatter::TYPE_INT64,
-			'double' => NumberFormatter::TYPE_DOUBLE,
-			'currency' => NumberFormatter::TYPE_CURRENCY,
-		];
-
-		//Get formatter
-		$formatter = $this->getNumberFormatter($locale, $style);
-
-		//Without type
-		if (!isset($types[$type])) {
-			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($types))));
-		}
-
-		//Return formatted number
-		return $formatter->format($number, $types[$type]);
-	}
-
-	/**
-	 * Format currency
-	 */
-	public function currency(int|float $number, string $currency, ?string $locale = null) {
-		//Get formatter
-		$formatter = $this->getNumberFormatter($locale, 'currency');
-
-		//Return formatted currency
-		return $formatter->formatCurrency($number, $currency);
 	}
 
 	/**
@@ -137,7 +112,7 @@ class IntlUtil {
 		static $formatters = [];
 
 		//Set locale
-		$locale = null !== $locale ? $locale : Locale::getDefault();
+		$locale = null !== $locale ? $locale : \Locale::getDefault();
 
 		//With existing formatter
 		if (isset($formatters[$locale][$style])) {
@@ -153,7 +128,7 @@ class IntlUtil {
 			'scientific' => \NumberFormatter::SCIENTIFIC,
 			'spellout' => \NumberFormatter::SPELLOUT,
 			'ordinal' => \NumberFormatter::ORDINAL,
-			'duration' => \NumberFormatter::DURATION,
+			'duration' => \NumberFormatter::DURATION
 		];
 
 		//Without styles
@@ -163,5 +138,67 @@ class IntlUtil {
 
 		//Return number formatter
 		return ($formatters[$locale][$style] = \NumberFormatter::create($locale, $styles[$style]));
+	}
+
+	/**
+	 * Format number
+	 */
+	public function number(int|float $number, $style = 'decimal', $type = 'default', ?string $locale = null) {
+		//Set types
+		static $types = [
+			'default' => \NumberFormatter::TYPE_DEFAULT,
+			'int32' => \NumberFormatter::TYPE_INT32,
+			'int64' => \NumberFormatter::TYPE_INT64,
+			'double' => \NumberFormatter::TYPE_DOUBLE,
+			'currency' => \NumberFormatter::TYPE_CURRENCY
+		];
+
+		//Get formatter
+		$formatter = $this->getNumberFormatter($locale, $style);
+
+		//Without type
+		if (!isset($types[$type])) {
+			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($types))));
+		}
+
+		//Return formatted number
+		return $formatter->format($number, $types[$type]);
+	}
+
+	/**
+	 * Format size
+	 */
+	public function size(int|float $number, $si = true, $style = 'decimal', $type = 'default', ?string $locale = null) {
+		//Set types
+		static $types = [
+			'default' => \NumberFormatter::TYPE_DEFAULT,
+			'int32' => \NumberFormatter::TYPE_INT32,
+			'int64' => \NumberFormatter::TYPE_INT64,
+			'double' => \NumberFormatter::TYPE_DOUBLE,
+			'currency' => \NumberFormatter::TYPE_CURRENCY
+		];
+
+		//Get formatter
+		$formatter = $this->getNumberFormatter($locale, $style);
+
+		//Without type
+		if (!isset($types[$type])) {
+			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($types))));
+		}
+
+		//Set unit
+		$unit = $si ? 1000 : 1024;
+
+		//Set index
+		$index = [ '', $si ? 'k' : 'K', 'M', 'G', 'T', 'P', 'E' ];
+
+		//Get exp
+		$exp = intval((log($number) / log($unit)));
+
+		//Rebase number
+		$number = round($number / pow($unit, $exp), 2);
+
+		//Return formatted number
+		return $formatter->format($number, $types[$type]).' '.$index[$exp].($si ? '' : 'i').'B';
 	}
 }
