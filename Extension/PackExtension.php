@@ -53,18 +53,19 @@ class PackExtension extends AbstractExtension {
 	 */
 	public function getFilters(): array {
 		return [
-			new \Twig\TwigFilter('lcfirst', 'lcfirst'),
-			new \Twig\TwigFilter('ucfirst', 'ucfirst'),
+			new \Twig\TwigFilter('base64_decode', 'base64_decode'),
+			new \Twig\TwigFilter('base64_encode', 'base64_encode'),
+			new \Twig\TwigFilter('download', 'file_get_contents', [false, null]),
 			new \Twig\TwigFilter('hash', [$this->slugger, 'hash']),
-			new \Twig\TwigFilter('unshort', [$this->slugger, 'unshort']),
-			new \Twig\TwigFilter('short', [$this->slugger, 'short']),
-			new \Twig\TwigFilter('slug', [$this->slugger, 'slug']),
+			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency']),
 			new \Twig\TwigFilter('intldate', [$this->intl, 'date'], ['needs_environment' => true]),
 			new \Twig\TwigFilter('intlnumber', [$this->intl, 'number']),
-			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency']),
-			new \Twig\TwigFilter('download', 'file_get_contents', [false, null]),
-			new \Twig\TwigFilter('base64_encode', 'base64_encode'),
-			new \Twig\TwigFilter('base64_decode', 'base64_decode')
+			new \Twig\TwigFilter('intlsize', [$this->intl, 'size']),
+			new \Twig\TwigFilter('lcfirst', 'lcfirst'),
+			new \Twig\TwigFilter('short', [$this->slugger, 'short']),
+			new \Twig\TwigFilter('slug', [$this->slugger, 'slug']),
+			new \Twig\TwigFilter('ucfirst', 'ucfirst'),
+			new \Twig\TwigFilter('unshort', [$this->slugger, 'unshort'])
 		];
 	}
 }
