@@ -167,6 +167,8 @@ class IntlUtil {
 
 	/**
 	 * Format size
+	 *
+	 * @TODO: @XXX: add unit translation kB, MB, GiB, etc ?
 	 */
 	public function size(int|float $number, $si = true, $style = 'decimal', $type = 'default', ?string $locale = null) {
 		//Set types
