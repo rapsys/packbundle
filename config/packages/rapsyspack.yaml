@@ -26,6 +26,11 @@ services:
         class: 'Rapsys\PackBundle\Util\FacebookUtil'
         arguments: [ '@router', '%kernel.project_dir%/var/cache', '%rapsyspack.path%' ]
         public: true
+    # Register file util service
+    rapsyspack.file_util:
+        class: 'Rapsys\PackBundle\Util\FileUtil'
+        arguments: [ '@rapsyspack.image_util', '@rapsyspack.intl_util', '@translator' ]
+        public: true
     # Register image util service
     rapsyspack.image_util:
         class: 'Rapsys\PackBundle\Util\ImageUtil'
@@ -78,6 +83,9 @@ services:
     # Register facebook util class alias
     Rapsys\PackBundle\Util\FacebookUtil:
         alias: 'rapsyspack.facebook_util'
+    # Register file util class alias
+    Rapsys\PackBundle\Util\FileUtil:
+        alias: 'rapsyspack.file_util'
     # Register image util class alias
     Rapsys\PackBundle\Util\ImageUtil:
         alias: 'rapsyspack.image_util'
