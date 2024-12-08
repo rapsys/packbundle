@@ -164,43 +164,4 @@ class IntlUtil {
 		//Return formatted number
 		return $formatter->format($number, $types[$type]);
 	}
-
-	/**
-	 * Format size
-	 *
-	 * @TODO: @XXX: add unit translation kB, MB, GiB, etc ?
-	 */
-	public function size(int|float $number, $si = true, $style = 'decimal', $type = 'default', ?string $locale = null) {
-		//Set types
-		static $types = [
-			'default' => \NumberFormatter::TYPE_DEFAULT,
-			'int32' => \NumberFormatter::TYPE_INT32,
-			'int64' => \NumberFormatter::TYPE_INT64,
-			'double' => \NumberFormatter::TYPE_DOUBLE,
-			'currency' => \NumberFormatter::TYPE_CURRENCY
-		];
-
-		//Get formatter
-		$formatter = $this->getNumberFormatter($locale, $style);
-
-		//Without type
-		if (!isset($types[$type])) {
-			throw new SyntaxError(sprintf('The type "%s" does not exist. Known types are: "%s"', $type, implode('", "', array_keys($types))));
-		}
-
-		//Set unit
-		$unit = $si ? 1000 : 1024;
-
-		//Set index
-		$index = [ '', $si ? 'k' : 'K', 'M', 'G', 'T', 'P', 'E' ];
-
-		//Get exp
-		$exp = intval((log($number) / log($unit)));
-
-		//Rebase number
-		$number = round($number / pow($unit, $exp), 2);
-
-		//Return formatted number
-		return $formatter->format($number, $types[$type]).' '.$index[$exp].($si ? '' : 'i').'B';
-	}
 }
