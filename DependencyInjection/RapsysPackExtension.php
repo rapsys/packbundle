@@ -49,8 +49,11 @@ class RapsysPackExtension extends Extension {
 		//Set rapsyspack.alias key
 		$container->setParameter($alias.'.alias', $alias);
 
-		//Set rapsyspack.path key
-		$container->setParameter($alias.'.path', $config['path']);
+		//Set rapsyspack.cache key
+		$container->setParameter($alias.'.cache', $config['cache']);
+
+		//Set rapsyspack.public key
+		$container->setParameter($alias.'.public', $config['public']);
 
 		//Set rapsyspack.version key
 		$container->setParameter($alias.'.version', RapsysPackBundle::getVersion());
