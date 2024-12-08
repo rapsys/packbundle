@@ -116,7 +116,7 @@ class SluggerUtil {
 		//Return hashed data
 		//XXX: we use hash_hmac with md5 hash
 		//XXX: crypt was dropped because it provided identical signature for string starting with same pattern
-		return str_replace(['+','/'], ['-','_'], base64_encode(hash_hmac('md5', $data, $this->secret, true)));
+		return str_replace(['+','/','='], ['-','_',''], base64_encode(hash_hmac('md5', $data, $this->secret, true)));
 	}
 
 	/**
