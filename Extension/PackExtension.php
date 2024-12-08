@@ -11,12 +11,14 @@
 
 namespace Rapsys\PackBundle\Extension;
 
+use Psr\Container\ContainerInterface;
+
 use Rapsys\PackBundle\Parser\TokenParser;
 use Rapsys\PackBundle\RapsysPackBundle;
 use Rapsys\PackBundle\Util\IntlUtil;
 use Rapsys\PackBundle\Util\SluggerUtil;
 
-use Symfony\Component\Asset\PackageInterface;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\HttpKernel\Config\FileLocator;
 
 use Twig\Extension\AbstractExtension;
@@ -26,11 +28,34 @@ use Twig\Extension\AbstractExtension;
  */
 class PackExtension extends AbstractExtension {
 	/**
+	 * Config array
+	 */
+	protected array $config;
+
+	/**
+	 * The stream context instance
+	 */
+	protected mixed $ctx;
+
+	/**
+	 * Creates pack extension
+	 *
 	 * {@inheritdoc}
 	 *
 	 * @link https://twig.symfony.com/doc/2.x/advanced.html
+	 *
+	 * @param ContainerInterface $container The ContainerInterface instance
+	 * @param IntlUtil $intl The IntlUtil instance
+	 * @param FileLocator $locator The FileLocator instance
+	 * @param RouterInterface $router The RouterInterface instance
+	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 */
-	public function __construct(protected IntlUtil $intl, protected FileLocator $locator, protected PackageInterface $package, protected SluggerUtil $slugger, protected array $parameters) {
+	public function __construct(protected ContainerInterface $container, protected IntlUtil $intl, protected FileLocator $locator, protected RouterInterface $router, protected SluggerUtil $slugger) {
+		//Retrieve config
+		$this->config = $container->getParameter(RapsysPackBundle::getAlias());
+
+		//Set ctx
+		$this->ctx = stream_context_create($this->config['context']);
 	}
 
 	/**
@@ -40,9 +65,9 @@ class PackExtension extends AbstractExtension {
 	 */
 	public function getTokenParsers(): array {
 		return [
-			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'stylesheet', $this->parameters['output']['css'], $this->parameters['filters']['css']),
-			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'javascript', $this->parameters['output']['js'], $this->parameters['filters']['js']),
-			new TokenParser($this->locator, $this->package, $this->parameters['token'], 'image', $this->parameters['output']['img'], $this->parameters['filters']['img'])
+			new TokenParser($this->container, $this->locator, $this->router, $this->slugger, $this->config, $this->ctx, 'css', 'stylesheet'),
+			new TokenParser($this->container, $this->locator, $this->router, $this->slugger, $this->config, $this->ctx, 'js', 'javascript'),
+			new TokenParser($this->container, $this->locator, $this->router, $this->slugger, $this->config, $this->ctx, 'img', 'image')
 		];
 	}
 
@@ -60,7 +85,6 @@ class PackExtension extends AbstractExtension {
 			new \Twig\TwigFilter('intlcurrency', [$this->intl, 'currency']),
 			new \Twig\TwigFilter('intldate', [$this->intl, 'date'], ['needs_environment' => true]),
 			new \Twig\TwigFilter('intlnumber', [$this->intl, 'number']),
-			new \Twig\TwigFilter('intlsize', [$this->intl, 'size']),
 			new \Twig\TwigFilter('lcfirst', 'lcfirst'),
 			new \Twig\TwigFilter('short', [$this->slugger, 'short']),
 			new \Twig\TwigFilter('slug', [$this->slugger, 'slug']),
