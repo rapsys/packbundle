@@ -12,7 +12,6 @@
 namespace Rapsys\PackBundle\Command;
 
 use Rapsys\PackBundle\Command;
-use Rapsys\PackBundle\RapsysPackBundle;
 
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
@@ -29,19 +28,19 @@ class RangeCommand extends Command {
 	 *
 	 * Shown with bin/console list
 	 */
-	protected string $description = 'Outputs a shuffled printable characters range';
+	protected string $description = 'Generates a shuffled printable characters range';
 
 	/**
 	 * Set help
 	 *
 	 * Shown with bin/console --help rapsyspack:range
 	 */
-	protected string $help = 'This command outputs a shuffled printable characters range';
+	protected string $help = 'This command generates a shuffled printable characters range';
 
 	/**
 	 * {@inheritdoc}
 	 */
-	public function __construct(protected string $file = '.env.local', protected ?string $name = null) {
+	public function __construct(protected string $file, protected ?string $name = null) {
 		//Call parent constructor
 		parent::__construct($this->name);
 
@@ -99,7 +98,7 @@ class RangeCommand extends Command {
 			//Without match
 			} else {
 				//Append string
-				$content .= (strlen($content)?"\n\n":'').'###> '.RapsysPackBundle::getBundleAlias().' ###'."\n".$string."\n".'###< '.RapsysPackBundle::getBundleAlias().' ###';
+				$content .= (strlen($content)?"\n\n":'').'###> '.$this->bundle.' ###'."\n".$string."\n".'###< '.$this->bundle.' ###';
 			}
 
 			//Write file content
@@ -119,7 +118,7 @@ class RangeCommand extends Command {
 			echo '# Add to '.$file."\n";
 
 			//Print rapsys pack range variable
-			echo '###> '.RapsysPackBundle::getBundleAlias().' ###'."\n".$string."\n".'###< '.RapsysPackBundle::getBundleAlias().' ###';
+			echo '###> '.$this->bundle.' ###'."\n".$string."\n".'###< '.$this->bundle.' ###';
 
 			//Add trailing line
 			echo "\n";
