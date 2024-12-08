@@ -11,6 +11,7 @@
 
 namespace Rapsys\PackBundle\Form;
 
+use Rapsys\PackBundle\RapsysPackBundle;
 use Rapsys\PackBundle\Util\ImageUtil;
 use Rapsys\PackBundle\Util\SluggerUtil;
 
@@ -49,7 +50,7 @@ class CaptchaType extends AbstractType {
 		//With image, slugger and translator
 		if (!empty($options['captcha']) && $this->image !== null && $this->slugger !== null && $this->translator !== null) {
 			//Set captcha
-			$captcha = $this->image->getCaptcha((new \DateTime('-1 year'))->getTimestamp());
+			$captcha = $this->image->getCaptcha();
 
 			//Add captcha token
 			$builder->add('_captcha_token', HiddenType::class, ['data' => $captcha['token'], 'empty_data' => $captcha['token'], 'mapped' => false]);
@@ -70,7 +71,7 @@ class CaptchaType extends AbstractType {
 		parent::configureOptions($resolver);
 
 		//Set defaults
-		$resolver->setDefaults(['captcha' => false]);
+		$resolver->setDefaults(['captcha' => false, 'translation_domain' => RapsysPackBundle::getAlias()]);
 
 		//Add extra captcha option
 		$resolver->setAllowedTypes('captcha', 'boolean');
