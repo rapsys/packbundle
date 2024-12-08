@@ -1,26 +1,37 @@
 #Routes configuration
 rapsyspack_captcha:
-    path: '/captcha/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{equation<[a-zA-Z0-9=_-]+>}/{width<\d+>?120}/{height<\d+>?36}.{!_format?jpeg}'
-    controller: Rapsys\PackBundle\Controller\ImageController::captcha
+    path: '/captcha/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{equation<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    controller: Rapsys\PackBundle\Controller::captcha
     methods: GET
 
-#TODO: replace this url with a redirection route ???
-#XXX: we don't need the mtime, maybe we can drop it in this redirect instead of apache ?
+rapsyspack_css:
+    path: '/bundles/rapsyspack/pack/css/{file<[a-zA-Z0-9]+>}.{!_format<css>?css}'
+    methods: GET
+
 rapsyspack_facebook:
-    path: '/bundles/rapsyspack/facebook/{mtime<\d+>}{path</.*>}.{!_format?jpeg}'
+    path: '/facebook/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{path<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    controller: Rapsys\PackBundle\Controller::facebook
+    methods: GET
+
+rapsyspack_img:
+    path: '/bundles/rapsyspack/pack/img/{file<[a-zA-Z0-9]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    methods: GET
+
+rapsyspack_js:
+    path: '/bundles/rapsyspack/pack/js/{file<[a-zA-Z0-9]+>}.{!_format<js>?js}'
     methods: GET
 
 rapsyspack_map:
-    path: '/map/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{latitude<\d+(\.?\d+)?>}/{longitude<\d+(\.?\d+)?>}/{zoom<\d+>?17}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
-    controller: Rapsys\PackBundle\Controller\MapController::map
+    path: '/map/{hash<[a-zA-Z0-9=_-]+>}/{latitude<\d+(\.?\d+)>},{longitude<\d+(\.?\d+)>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    controller: Rapsys\PackBundle\Controller::map
     methods: GET
 
-rapsyspack_multimap:
-    path: '/multimap/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{latitude<\d+(\.?\d+)?>}/{longitude<\d+(\.?\d+)?>}/{coordinates<(?:\d+(\.\d+)?,\d+(\.\d+)?(-\d+(\.\d+)?,\d+(\.\d+)?)*)?>}/{zoom<\d+>?15}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
-    controller: Rapsys\PackBundle\Controller\MapController::multimap
+rapsyspack_multi:
+    path: '/multi/{hash<[a-zA-Z0-9=_-]+>}/{coordinate<\d+(\.\d+)?,\d+(\.\d+)?(-\d+(\.\d+)?,\d+(\.\d+)?)+>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    controller: Rapsys\PackBundle\Controller::multi
     methods: GET
 
 rapsyspack_thumb:
-    path: '/thumb/{hash<[a-zA-Z0-9=_-]+>}/{updated<\d+>}/{path<[a-zA-Z0-9=_-]+>}/{width<\d+>?640}/{height<\d+>?640}.{!_format?jpeg}'
-    controller: Rapsys\PackBundle\Controller\ImageController::thumb
+    path: '/thumb/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{path<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    controller: Rapsys\PackBundle\Controller::thumb
     methods: GET
