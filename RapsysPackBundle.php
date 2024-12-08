@@ -64,6 +64,6 @@ class RapsysPackBundle extends Bundle {
 	 */
 	public static function getVersion(): string {
 		//Return version
-		return '0.5.3';
+		return '0.5.4';
 	}
 }
