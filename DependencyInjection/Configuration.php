@@ -50,6 +50,13 @@ class Configuration implements ConfigurationInterface {
 				'thickness' => 2,
 				'width' => 192
 			],
+			'context' => [
+				'http' => [
+					'max_redirects' => $_ENV['RAPSYSPACK_REDIRECT'] ?? 20,
+					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (($timeout = ini_get('default_socket_timeout')) !== false && $timeout !== '' ? (float)$timeout : 60),
+					'user_agent' => $_ENV['RAPSYSPACK_AGENT'] ?? (($agent = ini_get('user_agent')) !== false && $agent !== '' ? (string)$agent : $alias.'/'.($version = RapsysPackBundle::getVersion()))
+				]
+			],
 			'facebook' => [
 				'align' => 'center',
 				'fill' => 'white',
@@ -191,6 +198,18 @@ class Configuration implements ConfigurationInterface {
 							->scalarNode('border')->cannotBeEmpty()->defaultValue($defaults['captcha']['border'])->end()
 							->scalarNode('thickness')->cannotBeEmpty()->defaultValue($defaults['captcha']['thickness'])->end()
 							->scalarNode('width')->cannotBeEmpty()->defaultValue($defaults['captcha']['width'])->end()
+						->end()
+					->end()
+					->arrayNode('context')
+						->addDefaultsIfNotSet()
+						->children()
+							->arrayNode('http')
+							->addDefaultsIfNotSet()
+							->children()
+								->scalarNode('max_redirects')->defaultValue($defaults['captcha']['max_redirects'])->end()
+								->scalarNode('timeout')->defaultValue($defaults['captcha']['timeout'])->end()
+								->scalarNode('user_agent')->cannotBeEmpty()->defaultValue($defaults['captcha']['user_agent'])->end()
+							->end()
 						->end()
 					->end()
 					->arrayNode('facebook')

@@ -63,15 +63,7 @@ class Controller extends AbstractController implements ServiceSubscriberInterfac
 		$this->config = $container->getParameter($this->alias = RapsysPackBundle::getAlias());
 
 		//Set ctx
-		$this->ctx = stream_context_create(
-			[
-				'http' => [
-					'max_redirects' => $_ENV['RAPSYSPACK_REDIRECT'] ?? 20,
-					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (($timeout = ini_get('default_socket_timeout')) !== false && $timeout !== '' ? (float)$timeout : 60),
-					'user_agent' => $_ENV['RAPSYSPACK_AGENT'] ?? (($agent = ini_get('user_agent')) !== false && $agent !== '' ? (string)$agent : $this->alias.'/'.($this->version = RapsysPackBundle::getVersion()))
-				]
-			]
-		);
+		$this->ctx = stream_context_create($this->config['context']);
 	}
 
 	/**
