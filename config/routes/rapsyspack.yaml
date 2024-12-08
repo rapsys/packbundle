@@ -1,6 +1,6 @@
 #Routes configuration
 rapsyspack_captcha:
-    path: '/captcha/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{equation<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    path: '/captcha/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{equation<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>}'
     controller: Rapsys\PackBundle\Controller::captcha
     methods: GET
 
@@ -9,12 +9,12 @@ rapsyspack_css:
     methods: GET
 
 rapsyspack_facebook:
-    path: '/facebook/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{path<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    path: '/facebook/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{path<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>}'
     controller: Rapsys\PackBundle\Controller::facebook
     methods: GET
 
 rapsyspack_img:
-    path: '/bundles/rapsyspack/pack/img/{file<[a-zA-Z0-9]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    path: '/bundles/rapsyspack/pack/img/{file<[a-zA-Z0-9]+>}.{!_format<(jpeg|png|webp)>}'
     methods: GET
 
 rapsyspack_js:
@@ -22,16 +22,17 @@ rapsyspack_js:
     methods: GET
 
 rapsyspack_map:
-    path: '/map/{hash<[a-zA-Z0-9=_-]+>}/{latitude<\d+(\.?\d+)>},{longitude<\d+(\.?\d+)>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    path: '/map/{hash<[a-zA-Z0-9=_-]+>}/{latitude<\d+(\.?\d+)>},{longitude<\d+(\.?\d+)>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>}'
     controller: Rapsys\PackBundle\Controller::map
     methods: GET
 
 rapsyspack_multi:
-    path: '/multi/{hash<[a-zA-Z0-9=_-]+>}/{coordinate<\d+(\.\d+)?,\d+(\.\d+)?(-\d+(\.\d+)?,\d+(\.\d+)?)+>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>?jpeg}'
+    path: '/multi/{hash<[a-zA-Z0-9=_-]+>}/{coordinate<\d+(\.\d+)?,\d+(\.\d+)?(-\d+(\.\d+)?,\d+(\.\d+)?)+>}-{zoom<\d+>}-{width<\d+>}x{height<\d+>}.{!_format<(jpeg|png|webp)>}'
     controller: Rapsys\PackBundle\Controller::multi
     methods: GET
 
 rapsyspack_thumb:
+    #TODO: remove default _format when a solution is found
     path: '/thumb/{hash<[a-zA-Z0-9=_-]+>}/{width<\d+>}/{height<\d+>}/{path<[a-zA-Z0-9=_-]+>}.{!_format<(jpeg|png|webp)>?jpeg}'
     controller: Rapsys\PackBundle\Controller::thumb
     methods: GET
