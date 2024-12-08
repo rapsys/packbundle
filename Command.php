@@ -21,11 +21,38 @@ use Symfony\Component\DependencyInjection\Container;
  */
 class Command extends BaseCommand {
 	/**
+	 * Alias string
+	 */
+	protected string $alias = '';
+
+	/**
+	 * Bundle string
+	 */
+	protected string $bundle = '';
+
+	/**
 	 * {@inheritdoc}
 	 */
 	public function __construct(protected ?string $name = null) {
+		//Get class
+		$class = strrchr(static::class, '\\', true);
+
+		//Without command name
+		if (substr(static::class, -strlen('\\Command')) !== '\\Command') {
+			$class = strrchr($class, '\\', true);
+		}
+
+		//Set bundle
+		$this->bundle = strtolower($class);
+
+		//With full class name
+		if (class_exists($class .= '\\'.str_replace('\\', '', $class)) && method_exists($class, 'getAlias')) {
+			//Set alias
+			$this->alias = call_user_func([$class, 'getAlias']);
+		}
+
 		//Fix name
-		$this->name = $this->name ?? static::getName();
+		$this->name = $this->name ?? static::getName($this->alias);
 
 		//Call parent constructor
 		parent::__construct($this->name);
@@ -44,11 +71,13 @@ class Command extends BaseCommand {
 	}
 
 	/**
+	 * Return the command name
+	 *
 	 * {@inheritdoc}
 	 *
-	 * Return the command name
+	 * @param ?string $alias The bundle alias
 	 */
-	public function getName(): string {
+	public function getName(?string $alias = null): string {
 		//With namespace
 		if ($npos = strrpos(static::class, '\\')) {
 			//Set name pos
@@ -58,17 +87,33 @@ class Command extends BaseCommand {
 			$npos = 0;
 		}
 
+		//Set bundle pos
+		$bpos = strlen(static::class) - $npos;
+
 		//With trailing command
 		if (substr(static::class, -strlen('Command'), strlen('Command')) === 'Command') {
-			//Set bundle pos
-			$bpos = strlen(static::class) - $npos - strlen('Command');
-		//Without bundle
-		} else {
-			//Set bundle pos
-			$bpos = strlen(static::class) - $npos;
+			//Fix bundle pos
+			$bpos -= strlen('Command');
+		}
+
+		//Without alias
+		if ($alias === null) {
+			//Get class
+			$class = strrchr(static::class, '\\', true);
+
+			//Without command name
+			if (substr(static::class, -strlen('\\Command')) !== '\\Command') {
+				$class = strrchr($class, '\\', true);
+			}
+
+			//With full class name
+			if (class_exists($class .= '\\'.str_replace('\\', '', $class)) && method_exists($class, 'getAlias')) {
+				//Set alias
+				$alias = call_user_func([$class, 'getAlias']);
+			}
 		}
 
 		//Return command alias
-		return RapsysPackBundle::getAlias().':'.strtolower(substr(static::class, $npos, $bpos));
+		return ($alias?$alias.':':'').strtolower(substr(static::class, $npos, $bpos));
 	}
 }
