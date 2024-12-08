@@ -29,45 +29,6 @@ class RapsysPackBundle extends Bundle {
 	}
 
 	/**
-	 * Return bundle alias
-	 *
-	 * @return string The bundle alias
-	 */
-	public static function getBundleAlias(): string {
-		//With namespace
-		if ($npos = strrpos(static::class, '\\')) {
-			//Set name pos
-			$npos++;
-
-			//With single namespace
-			$nspos = strpos(static::class, '\\');
-			//Without namespace
-		} else {
-			//Set name pos
-			$npos = 0;
-		}
-
-		//With trailing bundle
-		if (substr(static::class, -strlen('Bundle'), strlen('Bundle')) === 'Bundle') {
-			//Set bundle pos
-			$bpos = strlen(static::class) - $npos - strlen('Bundle');
-			//Without bundle
-		} else {
-			//Set bundle pos
-			$bpos = strlen(static::class) - $npos;
-		}
-
-		//With namespace
-		if ($npos) {
-			//Return prefixed class name
-			return strtolower(substr(static::class, 0, $nspos).'/'.substr(static::class, $npos, $bpos));
-		}
-
-		//Return class name
-		return strtolower(substr(static::class, $npos, $bpos));
-	}
-
-	/**
 	 * Return alias
 	 *
 	 * @return string The alias
