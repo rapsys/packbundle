@@ -71,7 +71,7 @@ class CaptchaType extends AbstractType {
 		parent::configureOptions($resolver);
 
 		//Set defaults
-		$resolver->setDefaults(['captcha' => false, 'translation_domain' => RapsysPackBundle::getAlias()]);
+		$resolver->setDefaults(['captcha' => false, 'error_bubbling' => true, 'translation_domain' => RapsysPackBundle::getAlias()]);
 
 		//Add extra captcha option
 		$resolver->setAllowedTypes('captcha', 'boolean');
