@@ -11,6 +11,10 @@
 
 namespace Rapsys\PackBundle\Util;
 
+use Psr\Container\ContainerInterface;
+
+use Rapsys\PackBundle\RapsysPackBundle;
+
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -21,57 +25,25 @@ use Symfony\Component\Routing\RouterInterface;
  */
 class FacebookUtil {
 	/**
-	 * The default fonts
+	 * Alias string
 	 */
-	const fonts = [ 'default' => 'ttf/default.ttf' ];
+	protected string $alias;
 
 	/**
-	 * The default font
+	 * Config array
 	 */
-	const font = 'default';
-
-	/**
-	 * The default font size
-	 */
-	const size = 60;
-
-	/**
-	 * The default width
-	 */
-	const width = 15;
-
-	/**
-	 * The default fill
-	 */
-	const fill = 'white';
-
-	/**
-	 * The default stroke
-	 */
-	const stroke = '#00c3f9';
-
-	/**
-	 * The default align
-	 */
-	const align = 'center';
+	protected array $config;
 
 	/**
 	 * Creates a new facebook util
 	 *
+	 * @param ContainerInterface $container The container instance
 	 * @param RouterInterface $router The RouterInterface instance
-	 * @param string $cache The cache directory
-	 * @param string $path The public path
-	 * @param string $prefix The prefix
-	 * @param ?string $source The source
-	 * @param array $fonts The fonts
-	 * @param string $font The font
-	 * @param int $size The size
-	 * @param int $width The width
-	 * @param string $fill The fill
-	 * @param string $stroke The stroke
-	 * @param string $align The align
+	 * @param SluggerUtil $slugger The SluggerUtil instance
 	 */
-	function __construct(protected RouterInterface $router, protected string $cache = '../var/cache', protected string $path = './bundles/rapsyspack', protected string $prefix = 'facebook', protected ?string $source = null, protected array $fonts = self::fonts, protected string $font = self::font, protected int $size = self::size, protected int $width = self::width, protected string $fill = self::fill, protected string $stroke = self::stroke, protected string $align = self::align) {
+	public function __construct(protected ContainerInterface $container, protected RouterInterface $router, protected SluggerUtil $slugger) {
+		//Retrieve config
+		$this->config = $container->getParameter($this->alias = RapsysPackBundle::getAlias());
 	}
 
 	/**
@@ -79,30 +51,44 @@ class FacebookUtil {
 	 *
 	 * Generate simple image in jpeg format or load it from cache
 	 *
-	 * @param string $pathInfo The request path info
+	 * @TODO: move to a svg merging system ?
+	 *
+	 * @param string $path The request path info
 	 * @param array $texts The image texts
 	 * @param int $updated The updated timestamp
 	 * @param ?string $source The image source
-	 * @param int $width The width
-	 * @param int $height The height
+	 * @param ?int $height The height
+	 * @param ?int $width The width
 	 * @return array The image array
 	 */
-	public function getImage(string $pathInfo, array $texts, int $updated, ?string $source = null, int $width = 1200, int $height = 630): array {
+	public function getImage(string $path, array $texts, int $updated, ?string $source = null, ?int $height = null, ?int $width = null): array {
 		//Without source
-		if ($source === null && $this->source === null) {
+		if ($source === null && $this->config['facebook']['source'] === null) {
 			//Return empty image data
 			return [];
 		//Without local source
 		} elseif ($source === null) {
 			//Set local source
-			$source = $this->source;
+			$source = $this->config['facebook']['source'];
+		}
+
+		//Without width
+		if ($width === null) {
+			//Set width from config
+			$width = $this->config['facebook']['width'];
+		}
+
+		//Without height
+		if ($height === null) {
+			//Set height from config
+			$height = $this->config['facebook']['height'];
 		}
 
 		//Set path file
-		$path = $this->path.'/'.$this->prefix.$pathInfo.'.jpeg';
+		$facebook = $this->config['cache'].'/'.$this->config['prefixes']['facebook'].$path.'.jpeg';
 
 		//Without existing path
-		if (!is_dir($dir = dirname($path))) {
+		if (!is_dir($dir = dirname($facebook))) {
 			//Create filesystem object
 			$filesystem = new Filesystem();
 
@@ -117,12 +103,18 @@ class FacebookUtil {
 		}
 
 		//With path file
-		if (is_file($path) && ($mtime = stat($path)['mtime']) && $mtime >= $updated) {
+		if (is_file($facebook) && ($mtime = stat($facebook)['mtime']) && $mtime >= $updated) {
 			#XXX: we used to drop texts with $data['canonical'] === true !!!
+
+			//Set short path
+			$short = $this->slugger->short($path);
+
+			//Set hash
+			$hash = $this->slugger->serialize([$short, $height, $width]);
 
 			//Return image data
 			return [
-				'og:image' => $this->router->generate('rapsyspack_facebook', ['mtime' => $mtime, 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
+				'og:image' => $this->router->generate('rapsyspack_facebook', ['hash' => $hash, 'path' => $short, 'height' => $height, 'width' => $width, 'u' => $mtime], UrlGeneratorInterface::ABSOLUTE_URL),
 				'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 				'og:image:height' => $height,
 				'og:image:width' => $width
@@ -130,7 +122,7 @@ class FacebookUtil {
 		}
 
 		//Set cache path
-		$cache = $this->cache.'/'.$this->prefix.$pathInfo.'.png';
+		$cache = $this->config['cache'].'/'.$this->config['prefixes']['facebook'].$path.'.png';
 
 		//Without cache path
 		if (!is_dir($dir = dirname($cache))) {
@@ -170,7 +162,7 @@ class FacebookUtil {
 			//Without source
 			if (!is_file($source)) {
 				//Throw error
-				throw new \Exception(sprintf('Source file "%s" do not exists', $this->source));
+				throw new \Exception(sprintf('Source file "%s" do not exists', $source));
 			}
 
 			//Convert to absolute path
@@ -223,16 +215,16 @@ class FacebookUtil {
 		//Draw each text stroke
 		foreach($texts as $text => $data) {
 			//Set font
-			$draw->setFont($this->fonts[$data['font']??$this->font]);
+			$draw->setFont($this->config['fonts'][$data['font']??$this->config['facebook']['font']]);
 
 			//Set font size
-			$draw->setFontSize($data['size']??$this->size);
+			$draw->setFontSize($data['size']??$this->config['facebook']['size']);
 
 			//Set stroke width
-			$draw->setStrokeWidth($data['width']??$this->width);
+			$draw->setStrokeWidth($data['thickness']??$this->config['facebook']['thickness']);
 
 			//Set text alignment
-			$draw->setTextAlignment($align = ($aligns[$data['align']??$this->align]));
+			$draw->setTextAlignment($align = ($aligns[$data['align']??$this->config['facebook']['align']]));
 
 			//Get font metrics
 			$metrics = $image->queryFontMetrics($draw, $text);
@@ -260,10 +252,10 @@ class FacebookUtil {
 			$texts[$text]['y'] = $data['y'] += $metrics['ascender'] - $metrics['textHeight']/2;
 
 			//Set stroke color
-			$draw->setStrokeColor(new \ImagickPixel($data['stroke']??$this->stroke));
+			$draw->setStrokeColor(new \ImagickPixel($data['border']??$this->config['facebook']['border']));
 
 			//Set fill color
-			$draw->setFillColor(new \ImagickPixel($data['stroke']??$this->stroke));
+			$draw->setFillColor(new \ImagickPixel($data['fill']??$this->config['facebook']['fill']));
 
 			//Add annotation
 			$draw->annotation($data['x'], $data['y'], $text);
@@ -307,16 +299,16 @@ class FacebookUtil {
 		//Draw each text
 		foreach($texts as $text => $data) {
 			//Set font
-			$draw->setFont($this->fonts[$data['font']??$this->font]);
+			$draw->setFont($this->config['fonts'][$data['font']??$this->config['facebook']['font']]);
 
 			//Set font size
-			$draw->setFontSize($data['size']??$this->size);
+			$draw->setFontSize($data['size']??$this->config['facebook']['size']);
 
 			//Set text alignment
-			$draw->setTextAlignment($aligns[$data['align']??$this->align]);
+			$draw->setTextAlignment($aligns[$data['align']??$this->config['facebook']['align']]);
 
 			//Set fill color
-			$draw->setFillColor(new \ImagickPixel($data['fill']??$this->fill));
+			$draw->setFillColor(new \ImagickPixel($data['fill']??$this->config['facebook']['fill']));
 
 			//Add annotation
 			$draw->annotation($data['x'], $data['y'], $text);
@@ -341,14 +333,20 @@ class FacebookUtil {
 		$image->setInterlaceScheme(\Imagick::INTERLACE_PLANE);
 
 		//Save image
-		if (!$image->writeImage($path)) {
+		if (!$image->writeImage($facebook)) {
 			//Throw error
-			throw new \Exception(sprintf('Unable to write image "%s"', $path));
+			throw new \Exception(sprintf('Unable to write image "%s"', $facebook));
 		}
+
+		//Set short path
+		$short = $this->slugger->short($path);
+
+		//Set hash
+		$hash = $this->slugger->serialize([$short, $height, $width]);
 
 		//Return image data
 		return [
-			'og:image' => $this->router->generate('rapsyspack_facebook', ['mtime' => stat($path)['mtime'], 'path' => $pathInfo], UrlGeneratorInterface::ABSOLUTE_URL),
+			'og:image' => $this->router->generate('rapsyspack_facebook', ['hash' => $hash, 'path' => $short, 'height' => $height, 'width' => $width, 'u' => stat($facebook)['mtime']], UrlGeneratorInterface::ABSOLUTE_URL),
 			'og:image:alt' => str_replace("\n", ' ', implode(' - ', array_keys($texts))),
 			'og:image:height' => $height,
 			'og:image:width' => $width
