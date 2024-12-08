@@ -80,13 +80,13 @@ class Controller extends AbstractController implements ServiceSubscriberInterfac
 	 * @param Request $request The Request instance
 	 * @param string $hash The hash
 	 * @param string $equation The shorted equation
-	 * @param int $width The width
 	 * @param int $height The height
+	 * @param int $width The width
 	 * @return Response The rendered image
 	 */
-	public function captcha(Request $request, string $hash, string $equation, int $width, int $height, string $_format): Response {
+	public function captcha(Request $request, string $hash, string $equation, int $height, int $width, string $_format): Response {
 		//Without matching hash
-		if ($hash !== $this->slugger->serialize([$equation, $width, $height])) {
+		if ($hash !== $this->slugger->serialize([$equation, $height, $width])) {
 			//Throw new exception
 			throw new NotFoundHttpException(sprintf('Unable to match captcha hash: %s', $hash));
 		//Without valid format
@@ -234,13 +234,13 @@ class Controller extends AbstractController implements ServiceSubscriberInterfac
 	 * @param Request $request The Request instance
 	 * @param string $hash The hash
 	 * @param string $path The image path
-	 * @param int $width The width
 	 * @param int $height The height
+	 * @param int $width The width
 	 * @return Response The rendered image
 	 */
-	public function facebook(Request $request, string $hash, string $path, int $width, int $height, string $_format): Response {
+	public function facebook(Request $request, string $hash, string $path, int $height, int $width, string $_format): Response {
 		//Without matching hash
-		if ($hash !== $this->slugger->serialize([$path, $width, $height])) {
+		if ($hash !== $this->slugger->serialize([$path, $height, $width])) {
 			//Throw new exception
 			throw new NotFoundHttpException(sprintf('Unable to match facebook hash: %s', $hash));
 		//Without matching format
@@ -740,13 +740,13 @@ class Controller extends AbstractController implements ServiceSubscriberInterfac
 	 * @param Request $request The Request instance
 	 * @param string $hash The hash
 	 * @param string $path The image path
-	 * @param int $width The width
 	 * @param int $height The height
+	 * @param int $width The width
 	 * @return Response The rendered image
 	 */
-	public function thumb(Request $request, string $hash, string $path, int $width, int $height, string $_format): Response {
+	public function thumb(Request $request, string $hash, string $path, int $height, int $width, string $_format): Response {
 		//Without matching hash
-		if ($hash !== $this->slugger->serialize([$path, $width, $height])) {
+		if ($hash !== $this->slugger->serialize([$path, $height, $width])) {
 			//Throw new exception
 			throw new NotFoundHttpException('Invalid thumb hash');
 		//Without valid format
