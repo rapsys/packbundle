@@ -44,6 +44,7 @@ class Configuration implements ConfigurationInterface {
 			'captcha' => [
 				'background' => 'white',
 				'fill' => '#cff',
+				'format' => 'jpeg',
 				'height' => 52,
 				'size' => 45,
 				'border' => '#00c3f9',
@@ -61,6 +62,7 @@ class Configuration implements ConfigurationInterface {
 				'align' => 'center',
 				'fill' => 'white',
 				'font' => 'default',
+				'format' => 'jpeg',
 				'height' => 630,
 				'size' => 60,
 				'source' => dirname(__DIR__).'/public/facebook/source.png',
@@ -111,6 +113,7 @@ class Configuration implements ConfigurationInterface {
 			'map' => [
 				'border' => '#00c3f9',
 				'fill' => '#cff',
+				'format' => 'jpeg',
 				'height' => 640,
 				'quality' => 70,
 				'radius' => 5,
@@ -123,6 +126,7 @@ class Configuration implements ConfigurationInterface {
 			'multi' => [
 				'border' => '#00c3f9',
 				'fill' => '#cff',
+				'format' => 'jpeg',
 				'height' => 640,
 				'highborder' => '#3333c3',
 				'highfill' => '#c3c3f9',
@@ -193,6 +197,7 @@ class Configuration implements ConfigurationInterface {
 						->children()
 							->scalarNode('background')->cannotBeEmpty()->defaultValue($defaults['captcha']['background'])->end()
 							->scalarNode('fill')->cannotBeEmpty()->defaultValue($defaults['captcha']['fill'])->end()
+							->scalarNode('format')->cannotBeEmpty()->defaultValue($defaults['captcha']['format'])->end()
 							->scalarNode('height')->cannotBeEmpty()->defaultValue($defaults['captcha']['height'])->end()
 							->scalarNode('size')->cannotBeEmpty()->defaultValue($defaults['captcha']['size'])->end()
 							->scalarNode('border')->cannotBeEmpty()->defaultValue($defaults['captcha']['border'])->end()
@@ -204,11 +209,12 @@ class Configuration implements ConfigurationInterface {
 						->addDefaultsIfNotSet()
 						->children()
 							->arrayNode('http')
-							->addDefaultsIfNotSet()
-							->children()
-								->scalarNode('max_redirects')->defaultValue($defaults['captcha']['max_redirects'])->end()
-								->scalarNode('timeout')->defaultValue($defaults['captcha']['timeout'])->end()
-								->scalarNode('user_agent')->cannotBeEmpty()->defaultValue($defaults['captcha']['user_agent'])->end()
+								->addDefaultsIfNotSet()
+								->children()
+									->scalarNode('max_redirects')->defaultValue($defaults['context']['http']['max_redirects'])->end()
+									->scalarNode('timeout')->defaultValue($defaults['context']['http']['timeout'])->end()
+									->scalarNode('user_agent')->cannotBeEmpty()->defaultValue($defaults['context']['http']['user_agent'])->end()
+								->end()
 							->end()
 						->end()
 					->end()
@@ -218,6 +224,7 @@ class Configuration implements ConfigurationInterface {
 							->scalarNode('align')->cannotBeEmpty()->defaultValue($defaults['facebook']['align'])->end()
 							->scalarNode('fill')->cannotBeEmpty()->defaultValue($defaults['facebook']['fill'])->end()
 							->scalarNode('font')->cannotBeEmpty()->defaultValue($defaults['facebook']['font'])->end()
+							->scalarNode('format')->cannotBeEmpty()->defaultValue($defaults['facebook']['format'])->end()
 							->scalarNode('height')->cannotBeEmpty()->defaultValue($defaults['facebook']['height'])->end()
 							->scalarNode('size')->cannotBeEmpty()->defaultValue($defaults['facebook']['size'])->end()
 							->scalarNode('source')->cannotBeEmpty()->defaultValue($defaults['facebook']['source'])->end()
@@ -308,6 +315,7 @@ class Configuration implements ConfigurationInterface {
 						->children()
 							->scalarNode('border')->cannotBeEmpty()->defaultValue($defaults['map']['border'])->end()
 							->scalarNode('fill')->cannotBeEmpty()->defaultValue($defaults['map']['fill'])->end()
+							->scalarNode('format')->cannotBeEmpty()->defaultValue($defaults['facebook']['format'])->end()
 							->scalarNode('height')->cannotBeEmpty()->defaultValue($defaults['map']['height'])->end()
 							->scalarNode('quality')->cannotBeEmpty()->defaultValue($defaults['map']['quality'])->end()
 							->scalarNode('radius')->cannotBeEmpty()->defaultValue($defaults['map']['radius'])->end()
@@ -323,6 +331,7 @@ class Configuration implements ConfigurationInterface {
 						->children()
 							->scalarNode('border')->cannotBeEmpty()->defaultValue($defaults['multi']['border'])->end()
 							->scalarNode('fill')->cannotBeEmpty()->defaultValue($defaults['multi']['fill'])->end()
+							->scalarNode('format')->cannotBeEmpty()->defaultValue($defaults['facebook']['format'])->end()
 							->scalarNode('height')->cannotBeEmpty()->defaultValue($defaults['multi']['height'])->end()
 							->scalarNode('highborder')->cannotBeEmpty()->defaultValue($defaults['multi']['highborder'])->end()
 							->scalarNode('highfill')->cannotBeEmpty()->defaultValue($defaults['multi']['highfill'])->end()
