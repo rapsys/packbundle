@@ -11,12 +11,19 @@
 
 namespace Rapsys\PackBundle\Parser;
 
+use Psr\Container\ContainerInterface;
+
 use Rapsys\PackBundle\RapsysPackBundle;
+use Rapsys\PackBundle\Util\SluggerUtil;
 
 use Symfony\Component\Asset\PackageInterface;
 use Symfony\Component\Filesystem\Exception\IOExceptionInterface;
 use Symfony\Component\Filesystem\Filesystem;
 use Symfony\Component\HttpKernel\Config\FileLocator;
+use Symfony\Component\Routing\Exception\InvalidParameterException;
+use Symfony\Component\Routing\Exception\MissingMandatoryParametersException;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Symfony\Component\Routing\RouterInterface;
 
 use Twig\Error\Error;
 use Twig\Node\Expression\AssignNameExpression;
@@ -32,32 +39,49 @@ use Twig\TokenParser\AbstractTokenParser;
  */
 class TokenParser extends AbstractTokenParser {
 	/**
-	 * The stream context instance
+	 * Filters array
 	 */
-	protected mixed $ctx;
+	protected array $filters;
+
+	/**
+	 * Output string
+	 */
+	protected string $output;
+
+	/**
+	 * Route string
+	 */
+	protected string $route;
+
+	/**
+	 * Token string
+	 */
+	protected string $token;
 
 	/**
 	 * Constructor
 	 *
+	 * @param ContainerInterface $container The ContainerInterface instance
 	 * @param FileLocator $locator The FileLocator instance
-	 * @param PackageInterface $package The Assets Package instance
-	 * @param string $token The token name
+	 * @param RouterInterface $router The RouterInterface instance
+	 * @param SluggerUtil $slugger The SluggerUtil instance
+	 * @param array $config The config
+	 * @param mixed $ctx The context stream instance
+	 * @param string $prefix The output prefix
 	 * @param string $tag The tag name
-	 * @param string $output The default output string
-	 * @param array $filters The default filter array
 	 */
-	public function __construct(protected FileLocator $locator, protected PackageInterface $package, protected string $token, protected string $tag, protected string $output, protected array $filters) {
-		//Set ctx
-		$this->ctx = stream_context_create(
-			[
-				'http' => [
-					#'header' => ['Referer: https://www.openstreetmap.org/'],
-					'max_redirects' => $_ENV['RAPSYSPACK_REDIRECT'] ?? 20,
-					'timeout' => $_ENV['RAPSYSPACK_TIMEOUT'] ?? (($timeout = ini_get('default_socket_timeout')) !== false && $timeout !== "" ? (float)$timeout : 60),
-					'user_agent' => $_ENV['RAPSYSPACK_AGENT'] ?? (($agent = ini_get('user_agent')) !== false && $agent !== "" ? (string)$agent : RapsysPackBundle::getAlias().'/'.RapsysPackBundle::getVersion())
-				]
-			]
-		);
+	public function __construct(protected ContainerInterface $container, protected FileLocator $locator, protected RouterInterface $router, protected SluggerUtil $slugger, protected array $config, protected mixed $ctx, protected string $prefix, protected string $tag) {
+		//Set filters
+		$this->filters = $config['filters'][$prefix];
+
+		//Set output
+		$this->output = $config['public'].'/'.$config['prefixes']['pack'].'/'.$config['prefixes'][$prefix].'/*.'.$prefix;
+
+		//Set route
+		$this->route = $config['routes'][$prefix];
+
+		//Set token
+		$this->token = $config['tokens'][$prefix];
 	}
 
 	/**
@@ -96,7 +120,7 @@ class TokenParser extends AbstractTokenParser {
 		while (!$stream->test(Token::BLOCK_END_TYPE)) {
 			//The files to process
 			if ($stream->test(Token::STRING_TYPE)) {
-				//'somewhere/somefile.(css,img,js)' 'somewhere/*' '@jquery'
+				//'somewhere/somefile.(css|img|js)' 'somewhere/*' '@jquery'
 				$inputs[] = $stream->next()->getValue();
 			//The filters token
 			} elseif ($stream->test(Token::NAME_TYPE, 'filters')) {
@@ -104,12 +128,19 @@ class TokenParser extends AbstractTokenParser {
 				$stream->next();
 				$stream->expect(Token::OPERATOR_TYPE, '=');
 				$this->filters = array_merge($this->filters, array_filter(array_map('trim', explode(',', $stream->expect(Token::STRING_TYPE)->getValue()))));
+			//The route token
+			} elseif ($stream->test(Token::NAME_TYPE, 'route')) {
+				//output='rapsyspack_css' OR output='rapsyspack_js' OR output='rapsyspack_img'
+				$stream->next();
+				$stream->expect(Token::OPERATOR_TYPE, '=');
+				$this->route = $stream->expect(Token::STRING_TYPE)->getValue();
 			//The output token
 			} elseif ($stream->test(Token::NAME_TYPE, 'output')) {
 				//output='js/packed/*.js' OR output='js/core.js'
 				$stream->next();
 				$stream->expect(Token::OPERATOR_TYPE, '=');
 				$this->output = $stream->expect(Token::STRING_TYPE)->getValue();
+			//TODO: add format ? jpeg|png|gif|webp|webm ???
 			//The token name
 			} elseif ($stream->test(Token::NAME_TYPE, 'token')) {
 				//name='core_js'
@@ -119,6 +150,7 @@ class TokenParser extends AbstractTokenParser {
 			//Unexpected token
 			} else {
 				$token = $stream->getCurrent();
+				//Throw error
 				throw new Error(sprintf('Unexpected token "%s" of value "%s"', Token::typeToEnglish($token->getType()), $token->getValue()), $token->getLine(), $stream->getSourceContext());
 			}
 		}
@@ -132,11 +164,24 @@ class TokenParser extends AbstractTokenParser {
 		//Process end block
 		$stream->expect(Token::BLOCK_END_TYPE);
 
-		//Replace star with sha1
-		if (($pos = strpos($this->output, '*')) !== false) {
-			//XXX: assetic use substr(sha1(serialize($inputs).serialize($this->filters).serialize($this->output)), 0, 7)
-			$this->output = substr($this->output, 0, $pos).sha1(serialize($inputs).serialize($this->filters)).substr($this->output, $pos + 1);
+		//Without valid output
+		if (($pos = strpos($this->output, '*')) === false || $pos !== strrpos($this->output, '*')) {
+			//Throw error
+			throw new Error(sprintf('Invalid output "%s"', $this->output), $token->getLine(), $stream->getSourceContext());
 		}
+
+		//Without existing route
+		if ($this->router->getRouteCollection()->get($this->route) === null) {
+			//Throw error
+			throw new Error(sprintf('Invalid route "%s"', $this->route), $token->getLine(), $stream->getSourceContext());
+		}
+
+		//Set file
+		//XXX: assetic use substr(sha1(serialize($inputs).serialize($this->filters).serialize($this->output)), 0, 7)
+		$file = $this->slugger->hash([$inputs, $this->filters, $this->output, $this->route, $this->token]);
+
+		//Replace star by file
+		$this->output = substr($this->output, 0, $pos).$file.substr($this->output, $pos + 1);
 
 		//Process inputs
 		for($k = 0; $k < count($inputs); $k++) {
@@ -161,6 +206,7 @@ class TokenParser extends AbstractTokenParser {
 					foreach($replacement as $input) {
 						//Check that it's a file
 						if (!is_file($input)) {
+							//Throw error
 							throw new Error(sprintf('Input path "%s" from "%s" is not a file', $input, $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 						}
 					}
@@ -172,10 +218,13 @@ class TokenParser extends AbstractTokenParser {
 					$k += count($replacement) - 1;
 				//Check that it's a file
 				} elseif (!is_file($inputs[$k])) {
+					//Throw error
 					throw new Error(sprintf('Input path "%s" is not a file', $inputs[$k]), $token->getLine(), $stream->getSourceContext());
 				}
 			}
 		}
+
+		#TODO: move the inputs reading from here to inside the filters ?
 
 		//Check inputs
 		if (!empty($inputs)) {
@@ -183,6 +232,7 @@ class TokenParser extends AbstractTokenParser {
 			foreach($inputs as $input) {
 				//Try to retrieve content
 				if (($data = file_get_contents($input, false, $this->ctx)) === false) {
+					//Throw error
 					throw new Error(sprintf('Unable to retrieve input path "%s"', $input), $token->getLine(), $stream->getSourceContext());
 				}
 
@@ -229,12 +279,6 @@ class TokenParser extends AbstractTokenParser {
 			#throw new Error('Empty filters token', $token->getLine(), $stream->getSourceContext());
 		}
 
-		//Retrieve asset uri
-		//XXX: this path is the merge of services.assets.path_package.arguments[0] and rapsyspack.output.(css,img,js)
-		if (($outputUrl = $this->package->getUrl($this->output)) === false) {
-			throw new Error(sprintf('Unable to get url for asset: %s', $this->output), $token->getLine(), $stream->getSourceContext());
-		}
-
 		//Check if we have a bundle path
 		if ($this->output[0] == '@') {
 			//Resolve it
@@ -264,14 +308,31 @@ class TokenParser extends AbstractTokenParser {
 			$filesystem->dumpFile($this->output, $content);
 		} catch (IOExceptionInterface $e) {
 			//Throw error
-			throw new Error(sprintf('Unable to write to: %s', $this->output), $token->getLine(), $stream->getSourceContext(), $e);
+			throw new Error(sprintf('Unable to write "%s"', $this->output), $token->getLine(), $stream->getSourceContext(), $e);
+		}
+
+		//Without output file mtime
+		if (($mtime = filemtime($this->output)) === false) {
+			//Throw error
+			throw new Error(sprintf('Unable to get "%s" mtime', $this->output), $token->getLine(), $stream->getSourceContext(), $e);
+		}
+
+		//TODO: get mimetype for images ? and set _format ?
+
+		try {
+			//Generate asset url
+			$asset = $this->router->generate($this->route, [ 'file' => $file, 'u' => $mtime ]);
+		//Catch router exceptions
+		} catch (RouteNotFoundException|MissingMandatoryParametersException|InvalidParameterException $e) {
+			//Throw error
+			throw new Error(sprintf('Unable to generate asset route "%s"', $this->route), $token->getLine(), $stream->getSourceContext(), $e);
 		}
 
 		//Set name in context key
 		$ref = new AssignNameExpression($this->token, $token->getLine());
 
 		//Set output in context value
-		$value = new TextNode($outputUrl, $token->getLine());
+		$value = new TextNode($asset, $token->getLine());
 
 		//Send body with context set
 		return new Node([
@@ -312,62 +373,50 @@ class TokenParser extends AbstractTokenParser {
 			return $this->config['jquery'];
 		}*/
 
-		//Check that we have a / separator between bundle name and path
-		if (($pos = strpos($file, '/')) === false) {
+		//Extract bundle
+		if (($bundle = strstr($file, '/', true)) === false) {
+			throw new Error(sprintf('Invalid bundle "%s"', $file), $lineno, $source);
+		}
+
+		//Extract path
+		if (($path = strstr($file, '/')) === false) {
 			throw new Error(sprintf('Invalid path "%s"', $file), $lineno, $source);
 		}
 
-		//Set bundle
-		$bundle = substr($file, 0, $pos);
+		//Extract alias
+		$alias = strtolower(substr($bundle, 1));
 
-		//Set path
-		$path = substr($file, $pos + 1);
-
-		//Check for bundle suffix presence
-		//XXX: use "bundle templates automatic namespace" mimicked behaviour to find intended bundle and/or path
-		//XXX: see https://symfony.com/doc/4.3/templates.html#bundle-templates
-		if (strlen($bundle) < strlen('Bundle') || substr($bundle, -strlen('Bundle')) !== 'Bundle') {
-			//Append Bundle in an attempt to fix it's naming for locator
-			$bundle .= 'Bundle';
-
-			//Check for public resource prefix presence
-			if (strlen($path) < strlen('Resources/public') || substr($path, 0, strlen('Resources/public')) != 'Resources/public') {
-				//Prepend standard public path
-				$path = 'Resources/public/'.$path;
-			}
-		}
-
-		//Resolve bundle prefix
-		try {
-			$prefix = $this->locator->locate($bundle);
-		//Catch bundle does not exist or is not enabled exception
-		} catch(\InvalidArgumentException $e) {
-			//Fix lowercase first bundle character
-			if ($bundle[1] > 'Z' || $bundle[1] < 'A') {
-				$bundle[1] = strtoupper($bundle[1]);
+		//With public parameter
+		if ($this->container->hasParameter($alias.'.public')) {
+			//Set prefix
+			$prefix = $this->container->getParameter($alias.'.public');
+		//Without public parameter
+		} else {
+			//Without bundle suffix presence
+			//XXX: use "bundle templates automatic namespace" mimicked behaviour to find intended bundle and/or path
+			//XXX: see https://symfony.com/doc/4.3/templates.html#bundle-templates
+			if (strlen($bundle) < strlen('@Bundle') || substr($bundle, -strlen('Bundle')) !== 'Bundle') {
+				//Append Bundle
+				$bundle .= 'Bundle';
 			}
 
-			//Detect double bundle suffix
-			if (strlen($bundle) > strlen('_bundleBundle') && substr($bundle, -strlen('_bundleBundle')) == '_bundleBundle') {
-				//Strip extra bundle
-				$bundle = substr($bundle, 0, -strlen('Bundle'));
-			}
-
-			//Convert snake case in camel case
-			if (strpos($bundle, '_') !== false) {
-				//Fix every first character following a _
-				while(($cur = strpos($bundle, '_')) !== false) {
-					$bundle = substr($bundle, 0, $cur).ucfirst(substr($bundle, $cur + 1));
-				}
-			}
-
-			//Resolve fixed bundle prefix
+			//Try to resolve bundle prefix
 			try {
 				$prefix = $this->locator->locate($bundle);
-				//Catch bundle does not exist or is not enabled exception again
+			//Catch bundle does not exist or is not enabled exception
 			} catch(\InvalidArgumentException $e) {
-				//Bail out as bundle or path is invalid and we have no way to know what was meant
-				throw new Error(sprintf('Invalid bundle name "%s" in path "%s". Maybe you meant "%s"', substr($file, 1, $pos - 1), $file, $bundle.'/'.$path), $lineno, $source, $e);
+				throw new Error(sprintf('Unlocatable bundle "%s"', $bundle), $lineno, $source, $e);
+			}
+
+			//With Resources/public subdirectory
+			if (is_dir($prefix.'Resources/public')) {
+				$prefix .= 'Resources/public';
+			//With public subdirectory
+			} elseif (is_dir($prefix.'public')) {
+				$prefix .= 'public';
+			//Without any public subdirectory
+			} else {
+				throw new Error(sprintf('Bundle "%s" lacks a public subdirectory', $bundle), $lineno, $source, $e);
 			}
 		}
 
